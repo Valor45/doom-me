@@ -477,21 +477,28 @@
       <!-- 3.9) Software Page -->
       <div id="softwarePage" style="display:none;">
         <h2>Recommended Software</h2>
-        <p>Click to install (requires internet):</p>
+        <p>Click to install:</p>
         <ul class="soft-list">
-          <li><button class="btn btn-outline-light" onclick="downloadInstall('Malwarebytes','https://www.malwarebytes.com/')">Install Malwarebytes</button></li>
-          <li><button class="btn btn-outline-light" onclick="downloadInstall('AdwCleaner','https://www.malwarebytes.com/adwcleaner')">Install ADWCleaner</button></li>
-          <li><button class="btn btn-outline-light" onclick="downloadInstall('NVcleanstall','https://www.techpowerup.com/download/techpowerup-nvcleanstall/')">Install NVCleanstall</button></li>
-          <li><button class="btn btn-outline-light" onclick="downloadInstall('NVIDIA Profile Inspector','https://github.com/Orbmu2k/nvidiaProfileInspector/releases')">Install Nvidia Profile Inspector</button></li>
-          <li><button class="btn btn-outline-light" onclick="downloadInstall('WinRAR','https://www.win-rar.com/start.html?&L=0')">Install WinRAR</button></li>
-          <li><button class="btn btn-outline-light" onclick="downloadInstall('ParkControl','https://bitsum.com/parkcontrol/')">Install ParkControl</button></li>
-          <li><button class="btn btn-outline-light" onclick="downloadInstall('Process Lasso','https://bitsum.com/')">Install Process Lasso</button></li>
-          <li><button class="btn btn-outline-light" onclick="downloadInstall('Google Chrome','https://www.google.com/chrome/')">Install Google Chrome</button></li>
-          <li><button class="btn btn-outline-light" onclick="downloadInstall('Steam','https://store.steampowered.com/about/')">Install Steam</button></li>
-          <li><button class="btn btn-outline-light" onclick="downloadInstall('Epic Games','https://www.epicgames.com/store/')">Install Epic Games</button></li>
-          <li><button class="btn btn-outline-light" onclick="downloadInstall('NVIDIA App','https://www.nvidia.com/en-us/software/nvidia-app/')">Install Nvidia App</button></li>
-          <li><button class="btn btn-outline-light" onclick="downloadInstall('AMD Software','https://www.amd.com/en/support')">Install AMD Software</button></li>
-          <li><button class="btn btn-outline-light" onclick="downloadInstall('DDU','https://www.guru3d.com/download/display-driver-uninstaller-download/')">Install DDU Uninstaller</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Malwarebytes')">Install Malwarebytes</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('ADWCleaner')">Install ADWCleaner</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('NVcleanstall')">Install NVCleanstall</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Nvidia Profile Inspector')">Install Nvidia Profile Inspector</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('WinRAR')">Install WinRAR</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('ParkControl')">Install ParkControl</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Process Lasso')">Install Process Lasso</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Google Chrome')">Install Google Chrome</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Steam')">Install Steam</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Epic Games')">Install Epic Games</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Nvidia App')">Install Nvidia App</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('AMD Software')">Install AMD Software</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('DDU Uninstaller')">Install DDU Uninstaller</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Battle.net')">Install Battle.net</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Roblox')">Install Roblox</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Ubisoft Connect')">Install Ubisoft Connect</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('GOG Galaxy')">Install GOG Galaxy</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Origin')">Install Origin</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Discord')">Install Discord</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Wargaming.net')">Install Wargaming.net</button></li>
         </ul>
       </div>
 
@@ -562,6 +569,7 @@
   const fetch = require('node-fetch');
   const { exec } = require('child_process');
   const os   = require('os');
+  const { ipcRenderer } = require('electron');
 
   const ACCOUNTS_FILE = path.join(__dirname, 'accounts.json');
   const KEYS_FILE     = path.join(__dirname, 'keys.json');
@@ -875,9 +883,18 @@
   /***************************************************************
    * 8) SOFTWARE
    ***************************************************************/
-  function downloadInstall(name, url) {
-    alert(`Downloading ${name} from: ${url}\nThen we'd run the installer. (demo)`);
-    // real usage: do net request, save file to temp, exec it
+  function installSoft(softwareName) {
+    // Call the Electron main process function to install software
+    ipcRenderer.send('install-software', softwareName);
+    
+    // Listen for installation status updates
+    ipcRenderer.once('install-status', (event, arg) => {
+      if (arg.status === 'success') {
+        alert(`${softwareName} installed successfully!`);
+      } else {
+        alert(`Failed to install ${softwareName}: ${arg.message}`);
+      }
+    });
   }
 
   /***************************************************************
