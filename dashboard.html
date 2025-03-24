@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Windows Tweaker - Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="sidebar">
+    <h1 class="app-title">Tweaker</h1>
+    <ul>
+      <li data-section="dashboard" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</li>
+      <li data-section="fps"><i class="fas fa-gamepad"></i> FPS</li>
+      <li data-section="visual"><i class="fas fa-eye"></i> Visual</li>
+      <li data-section="privacy"><i class="fas fa-shield-alt"></i> Privacy</li>
+      <li data-section="misc"><i class="fas fa-ellipsis-h"></i> Misc</li>
+      <li data-section="recommended"><i class="fas fa-star"></i> Recommended</li>
+      <li data-section="software"><i class="fas fa-download"></i> Software</li>
+      <li data-section="admin" id="adminNav" style="display:none;"><i class="fas fa-user-shield"></i> Admin</li>
+    </ul>
+  </div>
+  <div class="main-content">
+    <!-- Dashboard Section -->
+    <div id="section-dashboard" class="section">
+      <h2>System Overview</h2>
+      <p><b>CPU:</b> <span id="cpu-info">-</span></p>
+      <p><b>GPU:</b> <span id="gpu-info">-</span></p>
+      <p><b>RAM:</b> <span id="ram-info">-</span></p>
+      <p><b>CPU Usage:</b> <span id="cpu-usage">0%</span> | <b>RAM Usage:</b> <span id="ram-usage">0%</span></p>
+      <button id="backupBtn">Create Restore Point</button>
+      <button id="benchmarkBtn">Run Benchmark</button>
+    </div>
+    <!-- FPS Tweaks Section -->
+    <div id="section-fps" class="section" style="display:none;">
+      <h2>FPS Boost Tweaks</h2>
+      <div class="toggle-item">
+        <label class="switch"><input type="checkbox" id="toggle_ultimate_performance"><span class="slider"></span></label>
+        <span class="toggle-label">Enable Ultimate Performance Plan</span>
+      </div>
+      <div class="toggle-item">
+        <label class="switch"><input type="checkbox" id="toggle_disable_hpet"><span class="slider"></span></label>
+        <span class="toggle-label">Disable HPET & Dynamic Tick</span>
+      </div>
+      <div class="toggle-item">
+        <label class="switch"><input type="checkbox" id="toggle_game_bar"><span class="slider"></span></label>
+        <span class="toggle-label">Disable Xbox Game Bar & DVR</span>
+      </div>
+      <div class="toggle-item">
+        <label class="switch"><input type="checkbox" id="toggle_optimize_scheduler"><span class="slider"></span></label>
+        <span class="toggle-label">Optimize Network & Scheduler (Low Latency)</span>
+      </div>
+      <div class="toggle-item">
+        <label class="switch"><input type="checkbox" id="toggle_input_delay"><span class="slider"></span></label>
+        <span class="toggle-label">Reduce Input Lag (Advanced)</span>
+      </div>
+    </div>
+    <!-- Privacy Tweaks Section -->
+    <div id="section-privacy" class="section" style="display:none;">
+      <h2>Privacy Tweaks</h2>
+      <div class="toggle-item">
+        <label class="switch"><input type="checkbox" id="toggle_no_telemetry"><span class="slider"></span></label>
+        <span class="toggle-label">Disable Telemetry / Data Collection</span>
+      </div>
+      <div class="toggle-item">
+        <label class="switch"><input type="checkbox" id="toggle_no_cortana"><span class="slider"></span></label>
+        <span class="toggle-label">Disable Cortana</span>
+      </div>
+      <div class="toggle-item">
+        <label class="switch"><input type="checkbox" id="toggle_no_ads"><span class="slider"></span></label>
+        <span class="toggle-label">Disable Ads & Suggestions</span>
+      </div>
+      <div class="toggle-item">
+        <label class="switch"><input type="checkbox" id="toggle_no_bkgd_apps"><span class="slider"></span></label>
+        <span class="toggle-label">Disable Background Apps</span>
+      </div>
+      <div class="toggle-item">
+        <label class="switch"><input type="checkbox" id="toggle_no_defender"><span class="slider"></span></label>
+        <span class="toggle-label">Disable Windows Defender</span>
+      </div>
+    </div>
+    <!-- Software Installation Section -->
+    <div id="section-software" class="section" style="display:none;">
+      <h2>Software Installation</h2>
+      <p>Click to install (requires internet):</p>
+      <ul class="soft-list">
+        <li><button onclick="installSoft('Malwarebytes')">Install Malwarebytes</button></li>
+        <li><button onclick="installSoft('ADWCleaner')">Install ADWCleaner</button></li>
+        <li><button onclick="installSoft('NVcleanstall')">Install NVCleanstall</button></li>
+        <li><button onclick="installSoft('Nvidia Profile Inspector')">Install Nvidia Profile Inspector</button></li>
+        <li><button onclick="installSoft('WinRAR')">Install WinRAR</button></li>
+        <li><button onclick="installSoft('ParkControl')">Install ParkControl</button></li>
+        <li><button onclick="installSoft('Process Lasso')">Install Process Lasso</button></li>
+        <li><button onclick="installSoft('Google Chrome')">Install Google Chrome</button></li>
+        <li><button onclick="installSoft('Steam')">Install Steam</button></li>
+        <li><button onclick="installSoft('Epic Games')">Install Epic Games</button></li>
+        <li><button onclick="installSoft('Nvidia App')">Install Nvidia App</button></li>
+        <li><button onclick="installSoft('AMD Software')">Install AMD Software</button></li>
+        <li><button onclick="installSoft('DDU Uninstaller')">Install DDU Uninstaller</button></li>
+      </ul>
+    </div>
+    <!-- Admin Panel Section -->
+    <div id="section-admin" class="section" style="display:none;">
+      <h2>Admin Panel</h2>
+      <p><b>Push New Tweak File:</b></p>
+      <input type="file" id="configFile">
+      <button id="pushBtn">Upload</button>
+      <p><b>User Logs:</b> <button id="logsBtn">View Login Attempts</button></p>
+      <p><b>License Keys:</b> <button id="keysBtn">View Key Status</button></p>
+      <textarea id="adminOutput" readonly style="width:90%; height:200px;"></textarea>
+    </div>
+  </div>
+  <!-- FontAwesome for icons -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>

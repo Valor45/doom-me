@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Ants Tweaks - Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-body">
+  <div class="login-container">
+    <h2>Login</h2>
+    <div id="login-form">
+      <input type="text" id="loginUser" placeholder="Username"><br>
+      <input type="password" id="loginPass" placeholder="Password"><br>
+      <input type="text" id="loginKey" placeholder="License Key"><br>
+      <button id="loginBtn">Login</button>
+      <p>Don't have an account? <a href="#" id="showRegister">Register</a></p>
+      <div id="login-error" class="error"></div>
+    </div>
+
+    <div id="register-form" style="display:none;">
+      <input type="text" id="regUser" placeholder="Username"><br>
+      <input type="password" id="regPass" placeholder="Password"><br>
+      <input type="text" id="regKey" placeholder="License Key"><br>
+      <button id="regBtn">Register</button>
+      <p>Already have an account? <a href="#" id="showLogin">Back to Login</a></p>
+      <div id="reg-error" class="error"></div>
+    </div>
+  </div>
+  
+  <!-- Dark/Light Mode Toggle -->
+  <label for="toggleTheme">Dark Mode</label>
+  <input type="checkbox" id="toggleTheme" />
+
+  <script src="login.js"></script>
+</body>
+</html>

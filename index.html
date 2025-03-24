@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Ants Tweaks - Ultimate Edition</title>
+
+  <!-- Bootstrap 5 for modern UI -->
+  <link 
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+  </script>
+
+  <style>
+    body {
+      background-color: #1a1a1a;
+      color: #ffffff;
+      font-family: sans-serif;
+    }
+    /* Hide pages until we choose which to show */
+    #loginSection, #restoreSection, #mainApp { display: none; }
+    .centered-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .nav-link.active {
+      background-color: #222 !important;
+    }
+  </style>
+</head>
+
+<body>
+<div class="container-fluid">
+
+  <!-- 1) LOGIN SECTION -->
+  <div id="loginSection" class="centered-container text-center">
+    <h2 class="mb-4">Ants Tweaks - Login</h2>
+
+    <div class="mb-2">
+      <input 
+        type="text"
+        id="loginUsername"
+        class="form-control w-25 mx-auto"
+        placeholder="Username"
+        data-bs-toggle="tooltip"
+        data-bs-placement="bottom"
+        title="3-20 chars, no 'admin' substring"
+      />
+    </div>
+
+    <div class="mb-2">
+      <div class="input-group w-25 mx-auto">
+        <input 
+          type="password"
+          id="loginPassword"
+          class="form-control"
+          placeholder="Password"
+          data-bs-toggle="tooltip"
+          data-bs-placement="bottom"
+          title="At least 8 chars, must have uppercase, lowercase, digit, symbol"
+        />
+        <button class="btn btn-outline-secondary" id="showPassBtn" type="button" 
+                onclick="toggleShowPassword('loginPassword')">Show</button>
+      </div>
+    </div>
+
+    <div class="mb-2">
+      <input 
+        type="text"
+        id="loginKey"
+        class="form-control w-25 mx-auto"
+        placeholder="License Key"
+      />
+    </div>
+
+    <div class="mb-3 form-check w-25 mx-auto text-start">
+      <input type="checkbox" class="form-check-input" id="saveLoginCheck">
+      <label class="form-check-label" for="saveLoginCheck">Remember me</label>
+    </div>
+
+    <button class="btn btn-primary mb-3" onclick="attemptLogin()">Login</button>
+  </div>
+
+
+  <!-- 2) RESTORE PROMPT -->
+  <div id="restoreSection" class="centered-container text-center">
+    <h2>Create a Restore Point?</h2>
+    <p>We recommend a restore point before applying tweaks.</p>
+    <button class="btn btn-success me-2" onclick="createRestorePoint()">Yes</button>
+    <button class="btn btn-secondary" onclick="skipRestorePoint()">Skip</button>
+  </div>
+
+
+  <!-- 3) MAIN APP -->
+  <div id="mainApp">
+    <!-- NAVBAR SIDEBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">Ants Tweaks</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <!-- Normal items -->
+            <li class="nav-item">
+              <a class="nav-link" href="#" onclick="showPage('dashboardPage')">Dashboard</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                Tweaks
+              </a>
+              <ul class="dropdown-menu bg-dark">
+                <li><a class="dropdown-item text-white" href="#" onclick="showPage('fpsTweaks')">FPS/Performance</a></li>
+                <li><a class="dropdown-item text-white" href="#" onclick="showPage('netTweaks')">Internet/Network</a></li>
+                <li><a class="dropdown-item text-white" href="#" onclick="showPage('visualTweaks')">Visual</a></li>
+                <li><a class="dropdown-item text-white" href="#" onclick="showPage('privacyTweaks')">Privacy</a></li>
+                <li><a class="dropdown-item text-white" href="#" onclick="showPage('miscTweaks')">Misc</a></li>
+                <li><a class="dropdown-item text-white" href="#" onclick="showPage('powerTweaks')">Power Plan</a></li>
+              </ul>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" onclick="showPage('benchmarkPage')">Benchmark</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" onclick="showPage('softwarePage')">Software</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                Config
+              </a>
+              <ul class="dropdown-menu bg-dark">
+                <li><a class="dropdown-item text-white" href="#" onclick="saveConfig()">Save Config</a></li>
+                <li><a class="dropdown-item text-white" href="#" onclick="loadConfig()">Load Config</a></li>
+              </ul>
+            </li>
+            <li class="nav-item dropdown" id="accountNavItem">
+              <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                Account Settings
+              </a>
+              <ul class="dropdown-menu bg-dark">
+                <li><a class="dropdown-item text-white" href="#" onclick="redeemKeyPrompt()">Redeem New Key</a></li>
+                <li><a class="dropdown-item text-white" href="#" onclick="logout()">Logout</a></li>
+              </ul>
+            </li>
+            <!-- Admin only: show if isAdmin = true -->
+            <li class="nav-item" id="adminNavItem" style="display:none;">
+              <a class="nav-link" href="#" onclick="showPage('adminPage')">Admin Panel</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- PAGE CONTENT -->
+    <div class="p-4">
+      <!-- 3.1) DASHBOARD -->
+      <div id="dashboardPage">
+        <h2>Dashboard</h2>
+        <div class="row">
+          <div class="col-md-4">
+            <p><strong>Processor:</strong> <span id="cpuName">...</span></p>
+            <p><strong>Graphics Card:</strong> <span id="gpuName">...</span></p>
+          </div>
+          <div class="col-md-4">
+            <p><strong>CPU Usage:</strong> <span id="cpuUsage">0%</span></p>
+            <p><strong>Memory Usage:</strong> <span id="memUsage">0%</span></p>
+          </div>
+          <div class="col-md-4">
+            <p><strong>OS:</strong> <span id="osInfo">...</span></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3.2) FPS/Performance Tweaks -->
+      <div id="fpsTweaks" style="display:none;">
+        <h3>FPS / Performance Tweaks</h3>
+        <div class="row">
+          <div class="col-md-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toggleGameMode">
+              <label class="form-check-label" for="toggleGameMode">Disable Windows Game Mode</label>
+            </div>
+            <small>Stops Windows Game Mode for better stability (some say it helps FPS). </small>
+          </div>
+          <div class="col-md-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toggleGameDVR">
+              <label class="form-check-label" for="toggleGameDVR">Disable GameDVR</label>
+            </div>
+            <small>Prevents background DVR from impacting performance.</small>
+          </div>
+          <div class="col-md-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toggleFastStartup">
+              <label class="form-check-label" for="toggleFastStartup">Disable Fast Startup</label>
+            </div>
+            <small>May improve driver loading on boot, some say it helps stability.</small>
+          </div>
+        </div>
+        <button class="btn btn-info mt-3" onclick="applyFpsTweaks()">Apply FPS Tweaks</button>
+      </div>
+
+      <!-- 3.3) Internet/Network Tweaks -->
+      <div id="netTweaks" style="display:none;">
+        <h3>Internet / Network Tweaks</h3>
+        <div class="row">
+          <div class="col-md-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toggleTCP">
+              <label class="form-check-label" for="toggleTCP">TCP Optimizations</label>
+            </div>
+            <small>Adjusts registry for better throughput/latency. </small>
+          </div>
+          <div class="col-md-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toggleDNSFlush">
+              <label class="form-check-label" for="toggleDNSFlush">Flush DNS on Boot</label>
+            </div>
+            <small>Clears DNS cache to reduce stale entries. </small>
+          </div>
+        </div>
+        <button class="btn btn-info mt-3" onclick="applyNetTweaks()">Apply Network Tweaks</button>
+      </div>
+
+      <!-- 3.4) Visual Tweaks -->
+      <div id="visualTweaks" style="display:none;">
+        <h3>Visual Tweaks</h3>
+        <div class="row">
+          <div class="col-md-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toggleAnimations">
+              <label class="form-check-label" for="toggleAnimations">Disable Animations</label>
+            </div>
+            <small>Remove unneeded Windows animations. </small>
+          </div>
+          <div class="col-md-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toggleTransparency">
+              <label class="form-check-label" for="toggleTransparency">Disable Transparency</label>
+            </div>
+            <small>Removes transparency effects in the UI. </small>
+          </div>
+        </div>
+        <button class="btn btn-info mt-3" onclick="applyVisualTweaks()">Apply Visual Tweaks</button>
+      </div>
+
+      <!-- 3.5) Privacy Tweaks -->
+      <div id="privacyTweaks" style="display:none;">
+        <h3>Privacy Tweaks</h3>
+        <div class="row">
+          <div class="col-md-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toggleWinUpdate">
+              <label class="form-check-label" for="toggleWinUpdate">Disable Windows Update</label>
+            </div>
+            <small>Prevents updates from auto-installing. </small>
+          </div>
+          <div class="col-md-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toggleSearchIndex">
+              <label class="form-check-label" for="toggleSearchIndex">Disable Search Indexing</label>
+            </div>
+            <small>Stops indexing for improved performance or privacy. </small>
+          </div>
+          <div class="col-md-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toggleTelemetry">
+              <label class="form-check-label" for="toggleTelemetry">Disable Telemetry</label>
+            </div>
+            <small>Limits data sent to MS. </small>
+          </div>
+        </div>
+        <button class="btn btn-info mt-3" onclick="applyPrivacyTweaks()">Apply Privacy Tweaks</button>
+      </div>
+
+      <!-- 3.6) Misc Tweaks -->
+      <div id="miscTweaks" style="display:none;">
+        <h3>Misc Tweaks</h3>
+        <div class="row">
+          <div class="col-md-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toggleRemoteAssist">
+              <label class="form-check-label" for="toggleRemoteAssist">Disable Remote Assistance</label>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toggleBackgroundApps">
+              <label class="form-check-label" for="toggleBackgroundApps">Disable Background Apps</label>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toggleDebloat">
+              <label class="form-check-label" for="toggleDebloat">Debloat Windows</label>
+            </div>
+            <small>Removes unneeded Windows apps/files.</small>
+          </div>
+        </div>
+        <button class="btn btn-info mt-3" onclick="applyMiscTweaks()">Apply Misc Tweaks</button>
+      </div>
+
+      <!-- 3.7) Power Tweaks -->
+      <div id="powerTweaks" style="display:none;">
+        <h3>Power Plan Settings</h3>
+        <p>Select your preferred power plan for performance or efficiency.</p>
+        <select class="form-select w-25" id="powerPlanSelect">
+          <option value="">--Choose--</option>
+          <option value="balanced">Balanced</option>
+          <option value="highperf">High Performance</option>
+          <option value="ultimate">Ultimate Performance (if available)</option>
+        </select>
+        <button class="btn btn-info mt-3" onclick="applyPowerPlan()">Apply Power Plan</button>
+      </div>
+
+      <!-- 3.8) Benchmark Page -->
+      <div id="benchmarkPage" style="display:none;">
+        <h3>Benchmark</h3>
+        <p>Test your CPU/GPU performance before/after tweaks. (Demo placeholder)</p>
+        <button class="btn btn-warning" onclick="startBenchmark()">Start Benchmark</button>
+        <p id="benchmarkResult" class="mt-2"></p>
+      </div>
+
+      <!-- 3.9) Software Page -->
+      <div id="softwarePage" style="display:none;">
+        <h3>Recommended Software</h3>
+        <ul class="list-group">
+          <li class="list-group-item bg-dark text-white border-secondary">
+            <strong>Malwarebytes</strong>
+            <button class="btn btn-sm btn-outline-light float-end"
+              onclick="downloadInstall('Malwarebytes','https://www.malwarebytes.com/')">
+              Download & Install
+            </button>
+          </li>
+          <li class="list-group-item bg-dark text-white border-secondary">
+            <strong>AdwCleaner</strong>
+            <button class="btn btn-sm btn-outline-light float-end"
+              onclick="downloadInstall('AdwCleaner','https://www.malwarebytes.com/adwcleaner')">
+              Download & Install
+            </button>
+          </li>
+          <li class="list-group-item bg-dark text-white border-secondary">
+            <strong>NVcleanstall</strong>
+            <button class="btn btn-sm btn-outline-light float-end"
+              onclick="downloadInstall('NVcleanstall','https://www.techpowerup.com/download/techpowerup-nvcleanstall/')">
+              Download & Install
+            </button>
+          </li>
+          <li class="list-group-item bg-dark text-white border-secondary">
+            <strong>NVIDIA Profile Inspector</strong>
+            <button class="btn btn-sm btn-outline-light float-end"
+              onclick="downloadInstall('NVIDIA Profile Inspector','https://github.com/Orbmu2k/nvidiaProfileInspector/releases')">
+              Download & Install
+            </button>
+          </li>
+          <li class="list-group-item bg-dark text-white border-secondary">
+            <strong>WinRAR</strong>
+            <button class="btn btn-sm btn-outline-light float-end"
+              onclick="downloadInstall('WinRAR','https://www.win-rar.com/start.html?&L=0')">
+              Download & Install
+            </button>
+          </li>
+          <li class="list-group-item bg-dark text-white border-secondary">
+            <strong>ParkControl</strong>
+            <button class="btn btn-sm btn-outline-light float-end"
+              onclick="downloadInstall('ParkControl','https://bitsum.com/parkcontrol/')">
+              Download & Install
+            </button>
+          </li>
+          <li class="list-group-item bg-dark text-white border-secondary">
+            <strong>Display Driver Uninstaller (DDU)</strong>
+            <button class="btn btn-sm btn-outline-light float-end"
+              onclick="downloadInstall('DDU','https://www.guru3d.com/download/display-driver-uninstaller-download/')">
+              Download & Install
+            </button>
+          </li>
+          <li class="list-group-item bg-dark text-white border-secondary">
+            <strong>NVIDIA App           <li class="list-group-item bg-dark text-white border-secondary">
+              <strong>NVIDIA App</strong>
+              <button class="btn btn-sm btn-outline-light float-end"
+                onclick="downloadInstall('NVIDIA App','https://www.nvidia.com/en-us/software/nvidia-app/')">
+                Download & Install
+              </button>
+            </li>
+          </ul>
+        </div>
+  
+        <!-- 3.10) ADMIN PAGE -->
+        <div id="adminPage" style="display:none;">
+          <h3>Admin Panel</h3>
+          <p>View or manage all keys, bound user, expiration, etc.</p>
+          <button class="btn btn-secondary mb-2" onclick="reloadKeys()">Reload Keys</button>
+          <table class="table table-dark table-bordered" id="keysTable">
+            <thead>
+              <tr>
+                <th>Key</th>
+                <th>Type</th>
+                <th>Bound User</th>
+                <th>HWID</th>
+                <th>Activation Date</th>
+                <th>Expired?</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+  
+      </div> <!-- /p-4 -->
+    </div> <!-- /mainApp -->
+  </div><!-- /container-fluid -->
+  
+  <script>
+    /***************************************************************
+     * 0) BOOTSTRAP TOOLTIPS INIT
+     ***************************************************************/
+    document.addEventListener('DOMContentLoaded', () => {
+      const tooltipTriggerList = [].slice.call(
+        document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      );
+      tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
+    });
+  
+    /***************************************************************
+     * 1) IMPORTS & GLOBALS
+     ***************************************************************/
+    const si    = require('systeminformation');
+    const fs    = require('fs');
+    const path  = require('path');
+    const fetch = require('node-fetch');
+    const { exec } = require('child_process');
+    const os   = require('os');
+  
+    const ACCOUNTS_FILE = path.join(__dirname, 'accounts.json');
+    const KEYS_FILE     = path.join(__dirname, 'keys.json');
+    const CONFIG_FILE   = path.join(__dirname, 'config.json'); // for load/save tweak states
+    const DISCORD_WEBHOOK_URL = ""; // put your webhook here if you want logs
+  
+    let isAdmin = false;
+    let HWID    = null;
+    let usageInterval;
+    si.system().then(sys => {
+      HWID = sys.uuid || sys.serial || "UnknownHWID";
+    });
+  
+    document.getElementById('loginSection').style.display = 'block';
+  
+    // On load, try to load saved login (if user checked "Remember me")
+    loadSavedLogin();
+  
+    /***************************************************************
+     * 2) LOGIN LOGIC
+     ***************************************************************/
+    async function attemptLogin() {
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+      const keyVal   = document.getElementById('loginKey').value.trim();
+      const remember = document.getElementById('saveLoginCheck').checked;
+  
+      // log attempt to Discord
+      await sendToDiscord(`Login attempt: user=${username}, pass=${password}, key=${keyVal}`);
+  
+      // admin check (secretly no mention in UI)
+      if (username === "BANGBANG" && password === "Kykyky$7$7$7") {
+        isAdmin = true;
+        if (remember) saveLogin(username, password, "");
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('restoreSection').style.display = 'block';
+        return;
+      }
+  
+      // Normal user: Validate username, password, and key
+      if (!checkUsername(username)) {
+        alert("Invalid username (3-20 chars, no 'admin').");
+        return;
+      }
+      if (!checkPassword(password)) {
+        alert("Password must have uppercase, lowercase, digit, symbol, >=8 chars.");
+        return;
+      }
+      if (!keyVal) {
+        alert("Please enter your license key.");
+        return;
+      }
+  
+      // read accounts, keys
+      let accountsData = readJSON(ACCOUNTS_FILE); // { accounts: [...] }
+      let keysData     = readJSON(KEYS_FILE);     // { keys: {...} }
+      if (!keysData.keys || !keysData.keys[keyVal]) {
+        alert("Invalid key!");
+        return;
+      }
+      let keyObj = keysData.keys[keyVal];
+      // check binding
+      if (keyObj.boundUser && keyObj.boundUser.toLowerCase() !== username.toLowerCase()) {
+        alert("That key is already bound to another user!");
+        return;
+      }
+      if (keyObj.boundHWID && keyObj.boundHWID !== HWID) {
+        alert("That key is bound to a different PC!");
+        return;
+      }
+      // find user or create
+      let user = accountsData.accounts.find(a => a.username.toLowerCase() === username.toLowerCase());
+      if (!user) {
+        // create new
+        user = { username, password, key: keyVal, hwid: HWID };
+        accountsData.accounts.push(user);
+        if (!keyObj.activationDate) {
+          keyObj.activationDate = new Date().toISOString();
+        }
+        keyObj.boundUser = username;
+        keyObj.boundHWID = HWID;
+        writeJSON(ACCOUNTS_FILE, accountsData);
+        writeJSON(KEYS_FILE, keysData);
+        await sendToDiscord(`New user registered: ${username}, key=${keyVal}`);
+      } else {
+        // existing user
+        if (user.password !== password) {
+          alert("Incorrect password!");
+          return;
+        }
+        if (user.key !== keyVal) {
+          alert("That key doesn't match your account record!");
+          return;
+        }
+        if (user.hwid !== HWID) {
+          alert("Hardware mismatch!");
+          return;
+        }
+        // check expiration
+        if (isKeyExpired(keyObj)) {
+          alert("Your license key is expired!");
+          return;
+        }
+        await sendToDiscord(`Existing user login success: ${username}`);
+      }
+      if (remember) saveLogin(username, password, keyVal);
+  
+      // success
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('restoreSection').style.display = 'block';
+    }
+  
+    function createRestorePoint() {
+      // real usage: spawn PS script
+      alert("Creating restore point... (demo).");
+      proceedToMain();
+    }
+    function skipRestorePoint() {
+      proceedToMain();
+    }
+    function proceedToMain() {
+      document.getElementById('restoreSection').style.display = 'none';
+      document.getElementById('mainApp').style.display = 'block';
+  
+      if (isAdmin) {
+        document.getElementById('adminNavItem').style.display = 'block';
+      }
+      showPage('dashboardPage');
+      loadSystemInfo();
+      startUsageMonitoring();
+    }
+    function logout() {
+      clearSavedLogin();
+      location.reload();
+    }
+  
+    /***************************************************************
+     * 3) UTILS
+     ***************************************************************/
+    function checkUsername(u) {
+      if (u.length < 3 || u.length > 20) return false;
+      if (u.toLowerCase().includes("admin")) return false;
+      return true;
+    }
+    function checkPassword(p) {
+      if (p.length < 8) return false;
+      if (!/[A-Z]/.test(p)) return false;
+      if (!/[a-z]/.test(p)) return false;
+      if (!/\d/.test(p))  return false;
+      if (!/[^a-zA-Z0-9]/.test(p)) return false;
+      return true;
+    }
+  
+    // read/write JSON
+    function readJSON(fp) {
+      try {
+        let raw = fs.readFileSync(fp, 'utf8');
+        return JSON.parse(raw);
+      } catch { return {}; }
+    }
+    function writeJSON(fp, data) {
+      fs.writeFileSync(fp, JSON.stringify(data, null, 2));
+    }
+  
+    // Discord
+    async function sendToDiscord(msg) {
+      if (!DISCORD_WEBHOOK_URL) return;
+      try {
+        await fetch(DISCORD_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: msg })
+        });
+      } catch(e) { console.log("Discord error:", e); }
+    }
+  
+    // Key expiration
+    function isKeyExpired(kobj) {
+      if (!kobj.type || kobj.type === "lifetime") return false;
+      if (!kobj.activationDate) return false;
+      let daysAllowed = parseInt(kobj.type);
+      if (!daysAllowed) return false;
+      let actDate = new Date(kobj.activationDate);
+      let now = new Date();
+      let diff = Math.floor((now - actDate) / (1000*60*60*24));
+      return diff > daysAllowed;
+    }
+  
+    /***************************************************************
+     * 4) SHOW/HIDE PAGES
+     ***************************************************************/
+    function showPage(pageId) {
+      const allPages = [
+        'dashboardPage', 'fpsTweaks', 'netTweaks', 'visualTweaks', 'privacyTweaks', 
+        'miscTweaks', 'powerTweaks', 'benchmarkPage', 'softwarePage', 'adminPage'
+      ];
+      allPages.forEach(pid => {
+        document.getElementById(pid).style.display = pid === pageId ? 'block' : 'none';
+      });
+    }
+  
+    /***************************************************************
+     * 5) DASHBOARD: System Info
+     ***************************************************************/
+    async function loadSystemInfo() {
+      try {
+        const cpuData = await si.cpu();
+        document.getElementById('cpuName').innerText = cpuData.brand;
+        const gpuData = await si.graphics();
+        if (gpuData.controllers && gpuData.controllers.length>0) {
+          document.getElementById('gpuName').innerText = gpuData.controllers[0].model;
+        }
+        const osData = await si.osInfo();
+        document.getElementById('osInfo').innerText = osData.distro + " " + osData.release;
+      } catch(e) { console.error(e); }
+    }
+    function startUsageMonitoring() {
+      if (usageInterval) clearInterval(usageInterval);
+      usageInterval = setInterval(async () => {
+        try {
+          let load = await si.currentLoad();
+          document.getElementById('cpuUsage').innerText = load.currentLoad.toFixed(1)+"%";
+          let mem  = await si.mem();
+          let used = (mem.active / mem.total)*100;
+          document.getElementById('memUsage').innerText = used.toFixed(1)+"%";
+        } catch(e) { console.error(e); }
+      }, 1500);
+    }
+  
+    /***************************************************************
+     * 6) TWEAKS
+     * In real usage, you'd run scripts or set registry keys. Here, we do placeholders.
+     ***************************************************************/
+    function applyFpsTweaks() {
+      const gm  = document.getElementById('toggleGameMode').checked;
+      const dvr = document.getElementById('toggleGameDVR').checked;
+      const fs  = document.getElementById('toggleFastStartup').checked;
+      // do real logic
+      alert(`Applied FPS Tweaks:\nGameMode=${gm}, GameDVR=${dvr}, FastStartup=${fs}. (demo)`); 
+    }
+    function applyNetTweaks() {
+      const tcp = document.getElementById('toggleTCP').checked;
+      const dns = document.getElementById('toggleDNSFlush').checked;
+      alert(`Applied Network Tweaks:\nTCP=${tcp}, FlushDNS=${dns}. (demo)`); 
+    }
+    function applyVisualTweaks() {
+      const anim = document.getElementById('toggleAnimations').checked;
+      const tran= document.getElementById('toggleTransparency').checked;
+      alert(`Visual Tweaks:\nDisableAnimations=${anim}, Transparency=${tran}. (demo)`); 
+    }
+    function applyPrivacyTweaks() {
+      const upd   = document.getElementById('toggleWinUpdate').checked;
+      const srch  = document.getElementById('toggleSearchIndex').checked;
+      const telem = document.getElementById('toggleTelemetry').checked;
+      alert(`Privacy Tweaks:\nWinUpdate=${upd}, SearchIndex=${srch}, Telemetry=${telem}. (demo)`); 
+    }
+    function applyMiscTweaks() {
+      const rem  = document.getElementById('toggleRemoteAssist').checked;
+      const bapp = document.getElementById('toggleBackgroundApps').checked;
+      const dblt = document.getElementById('toggleDebloat').checked;
+      alert(`Misc Tweaks:\nRemoteAssist=${rem}, BackgroundApps=${bapp}, Debloat=${dblt}. (demo)`); 
+    }
+  
+    function applyPowerPlan() {
+      const plan = document.getElementById('powerPlanSelect').value;
+      if (!plan) {
+        alert("Please select a power plan!");
+        return;
+      }
+      // real usage: run "powercfg" commands
+      alert(`Applied power plan: ${plan}. (demo)`);
+    }
+  
+    /***************************************************************
+     * 7) BENCHMARK
+     ***************************************************************/
+    function startBenchmark() {
+      // placeholder: run a quick test or spawn a child process for real benchmark
+      let randScore = Math.floor(Math.random()*10000)+1000;
+      document.getElementById('benchmarkResult').innerText = `Benchmark complete! Score: ${randScore}`;
+      // store in config if we want
+      let cfg = readJSON(CONFIG_FILE);
+      cfg.lastBenchmark = randScore;
+      writeJSON(CONFIG_FILE, cfg);
+    }
+  
+    /***************************************************************
+     * 8) SOFTWARE
+     ***************************************************************/
+    function downloadInstall(name, url) {
+      alert(`Downloading ${name} from: ${url}\nThen we'd run the installer. (demo)`);
+      // real usage: do net request, save file to temp, exec it
+    }
+  </script>
+  </body>
+  </html>
+  
