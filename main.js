@@ -1633,3 +1633,1177 @@ function applyAllTweaks() {
 }
 
 applyAllTweaks(); // Call to apply all the tweaks
+// Part 42: Game and system optimizations
+
+// Disable unnecessary services
+function disableServices() {
+  const services = [
+    "SysMain", "WMPNetworkSvc", "WerSvc", "XblAuthManager", "XblGameSave", "XboxGipSvc", 
+    "XboxNetApiSvc", "dmwappushservice", "DoSvc", "diagnosticshub.standardcollector.service"
+  ];
+
+  services.forEach(service => {
+    exec(`sc config ${service} start= disabled`, (err, stdout, stderr) => {
+      if (err) console.error(`Error disabling service ${service}: ${err}`);
+      else console.log(`Successfully disabled ${service}`);
+    });
+  });
+}
+
+// Disable Windows Defender and other services
+function disableDefenderAndOthers() {
+  exec("sc config WinDefend start= disabled", (err, stdout, stderr) => {
+    if (err) console.error(`Error disabling Windows Defender: ${err}`);
+    else console.log("Successfully disabled Windows Defender");
+  });
+
+  exec("sc config WdNisSvc start= disabled", (err, stdout, stderr) => {
+    if (err) console.error(`Error disabling WdNisSvc: ${err}`);
+    else console.log("Successfully disabled WdNisSvc");
+  });
+}
+
+// Apply Ultimate Performance Power Plan
+function applyUltimatePerformancePowerPlan() {
+  exec('powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 95533644-e700-4a79-a56c-a89e8cb109d9', (err, stdout, stderr) => {
+    if (err) console.error(`Error applying Ultimate Performance Power Plan: ${err}`);
+    else {
+      exec('powercfg -setactive 95533644-e700-4a79-a56c-a89e8cb109d9', (err, stdout, stderr) => {
+        if (err) console.error(`Error setting Ultimate Performance Power Plan active: ${err}`);
+        else console.log("Ultimate Performance Power Plan applied successfully");
+      });
+    }
+  });
+}
+
+// Apply Network Optimizations
+function applyNetworkOptimizations() {
+  exec('netsh interface tcp set global autotuninglevel=normal', (err, stdout, stderr) => {
+    if (err) console.error(`Error applying TCP optimization: ${err}`);
+    else console.log("TCP optimization applied successfully");
+  });
+
+  exec('netsh interface ipv6 set state disabled', (err, stdout, stderr) => {
+    if (err) console.error(`Error disabling IPv6: ${err}`);
+    else console.log("IPv6 disabled successfully");
+  });
+
+  exec('netsh int tcp set global dca=enabled', (err, stdout, stderr) => {
+    if (err) console.error(`Error enabling DCA: ${err}`);
+    else console.log("DCA enabled successfully");
+  });
+}
+
+// Apply CPU optimizations for gaming
+function applyCpuOptimizations() {
+  exec('bcdedit /set processorcores 8', (err, stdout, stderr) => {
+    if (err) console.error(`Error applying CPU optimizations: ${err}`);
+    else console.log("CPU optimizations applied successfully");
+  });
+}
+
+// Disable unnecessary telemetry and background processes
+function disableTelemetryAndBackgroundProcesses() {
+  exec("sc config DiagTrack start= disabled", (err, stdout, stderr) => {
+    if (err) console.error(`Error disabling telemetry: ${err}`);
+    else console.log("Telemetry disabled successfully");
+  });
+
+  exec("sc config dmwappushservice start= demand", (err, stdout, stderr) => {
+    if (err) console.error(`Error disabling background processes: ${err}`);
+    else console.log("Background processes disabled successfully");
+  });
+}
+
+// Combine all optimizations into one function
+function applyAllOptimizations() {
+  disableServices();
+  disableDefenderAndOthers();
+  applyUltimatePerformancePowerPlan();
+  applyNetworkOptimizations();
+  applyCpuOptimizations();
+  disableTelemetryAndBackgroundProcesses();
+}
+
+// Run all optimizations at once
+applyAllOptimizations();
+// Part 43: Game Launcher Integration
+function launchGame(game) {
+  const gamePaths = {
+    "Steam": "C:\\Program Files (x86)\\Steam\\steam.exe",
+    "EpicGames": "C:\\Program Files (x86)\\Epic Games\\Launcher\\Portal\\EpicGamesLauncher.exe",
+    "BattleNet": "C:\\Program Files (x86)\\Battle.net\\Battle.net Launcher.exe",
+    "Roblox": "C:\\Users\\%USERNAME%\\AppData\\Local\\Roblox\\RobloxPlayerBeta.exe",
+    "Ubisoft": "C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\UbisoftGameLauncher.exe",
+    // Add more games and game clients if necessary
+  };
+
+  const path = gamePaths[game];
+
+  if (path) {
+    exec(`start "" "${path}"`, (err, stdout, stderr) => {
+      if (err) console.error(`Error launching ${game}: ${err}`);
+      else console.log(`${game} launched successfully.`);
+    });
+  } else {
+    console.error("Game not found.");
+  }
+}
+
+// Example function to launch Steam
+function launchSteam() {
+  launchGame('Steam');
+}
+
+// Example function to launch Epic Games
+function launchEpicGames() {
+  launchGame('EpicGames');
+}
+// Part 44: More Game Launcher Tweaks (Add more as needed)
+function addGameLauncherOptions() {
+  const gameLaunchers = [
+    "Steam", "EpicGames", "BattleNet", "Roblox", "Ubisoft"
+  ];
+
+  gameLaunchers.forEach(game => {
+    console.log(`Setting up launcher for ${game}`);
+    // Add more specific tweaks or configurations for each game launcher if necessary
+  });
+}
+
+// Ensure the game launchers are available
+addGameLauncherOptions();
+
+// Set up an additional launch option for specific games or services
+function configureGameLauncher() {
+  const launcherPaths = {
+    "BattleNet": "C:\\Program Files (x86)\\Battle.net\\Battle.net Launcher.exe",
+    "Steam": "C:\\Program Files (x86)\\Steam\\steam.exe",
+    "Epic": "C:\\Program Files (x86)\\Epic Games\\Launcher\\Portal\\EpicGamesLauncher.exe",
+    "Roblox": "C:\\Users\\%USERNAME%\\AppData\\Local\\Roblox\\RobloxPlayerBeta.exe"
+  };
+
+  // Add additional handling logic for launching these apps
+  Object.keys(launcherPaths).forEach(game => {
+    console.log(`Configured launcher for ${game}`);
+  });
+}
+
+configureGameLauncher();
+// Part 45: Advanced Tweaks (Batch files and others)
+function runAdvancedTweaks() {
+  // Running powerful batch commands with additional user warnings
+  const batchFiles = [
+    'BoostedPlan.bat',
+    'crazypp.bat',
+    'crazypp2.bat',
+    'onlytelemetry.bat'
+    // Add any other powerful bat files that need to be executed
+  ];
+
+  batchFiles.forEach(batch => {
+    console.log(`Running batch file: ${batch}`);
+    exec(`start "" "${batch}"`, (err, stdout, stderr) => {
+      if (err) console.error(`Error running ${batch}: ${err}`);
+      else console.log(`${batch} executed successfully.`);
+    });
+  });
+}
+
+// Ensure the advanced tweaks and batch files are executed properly
+runAdvancedTweaks();
+// Part 46: Final checks and ensuring everything is set correctly
+function finalChecks() {
+  // Final security, cleanup, and tweak application
+  console.log("Performing final checks and cleanup...");
+
+  // Example final tweaks
+  exec('del /f /q "C:\\Windows\\Temp\\*"', (err, stdout, stderr) => {
+    if (err) console.error(`Error clearing temp files: ${err}`);
+    else console.log("Temp files cleaned up.");
+  });
+
+  // Additional checks for logging or telemetry
+  exec('reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer" /v "DisableWebSearch" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error("Error disabling web search: " + err);
+    else console.log("Web search disabled.");
+  });
+}
+
+finalChecks();
+// Part 47: System performance and security optimization
+function optimizeSecurityAndPerformance() {
+  // Disable unwanted Windows security features
+  exec('sc stop XblGameSave', (err, stdout, stderr) => {
+    if (err) console.error(`Error stopping XblGameSave: ${err}`);
+    else console.log("XblGameSave stopped.");
+  });
+
+  exec('sc stop XboxGipSvc', (err, stdout, stderr) => {
+    if (err) console.error(`Error stopping XboxGipSvc: ${err}`);
+    else console.log("XboxGipSvc stopped.");
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "ShowStatusBar" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+    if (err) console.error("Error enabling status bar: " + err);
+    else console.log("Status bar enabled.");
+  });
+}
+
+// Ensure system performance and security optimization is done
+optimizeSecurityAndPerformance();
+// Part 48: Advanced network and CPU optimization tweaks
+function applyNetworkCpuOptimizations() {
+  exec('netsh interface tcp set global autotuninglevel=normal', (err, stdout, stderr) => {
+    if (err) console.error(`Error applying network optimizations: ${err}`);
+    else console.log("Network optimizations applied.");
+  });
+
+  exec('bcdedit /set numproc 16', (err, stdout, stderr) => {
+    if (err) console.error(`Error optimizing CPU: ${err}`);
+    else console.log("CPU optimizations applied.");
+  });
+}
+
+// Apply network and CPU optimizations
+applyNetworkCpuOptimizations();
+  // Part 49 - continue from where we left off
+function applyFpsTweaks() {
+  exec('reg add "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+}
+
+// Part 50 - Network Tweaks
+function applyNetworkTweaks() {
+  exec('netsh interface tcp set global autotuninglevel=disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+}
+
+// Part 51 - Visual Tweaks
+function applyVisualTweaks() {
+  exec('reg add "HKCU\\Control Panel\\Desktop" /v "MenuShowDelay" /t REG_SZ /d 0 /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+}
+
+// Part 52 - Privacy Tweaks
+function applyPrivacyTweaks() {
+  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender" /v "DisableAntiSpyware" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+}
+
+// Part 53 - System Tweaks
+function applySystemTweaks() {
+  exec('reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management" /v "ClearPageFileAtShutdown" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+}
+
+// Part 54 - Disable Automatic Updates
+function disableUpdates() {
+  exec('sc stop wuauserv', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+  exec('sc config wuauserv start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+}
+
+// Continue to apply the tweaks as needed
+applyFpsTweaks();
+applyNetworkTweaks();
+applyVisualTweaks();
+applyPrivacyTweaks();
+applySystemTweaks();
+disableUpdates();
+// Part 55 - Game Launchers Tweaks
+function applyGameLaunchersTweaks() {
+  // Epic Games
+  exec('reg add "HKCU\\Software\\Epic Games\\Launcher" /v "InstallDir" /t REG_SZ /d "C:\\Program Files\\Epic Games" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+
+  // Steam
+  exec('reg add "HKCU\\Software\\Valve\\Steam" /v "SteamPath" /t REG_SZ /d "C:\\Program Files (x86)\\Steam" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+
+  // Ubisoft Connect
+  exec('reg add "HKCU\\Software\\Ubisoft\\Ubisoft Game Launcher" /v "InstallDir" /t REG_SZ /d "C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+
+  // Roblox
+  exec('reg add "HKCU\\Software\\Roblox" /v "InstallLocation" /t REG_SZ /d "C:\\Program Files\\Roblox" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+}
+
+// Part 56 - Clean Up Temporary Files
+function cleanUpTemporaryFiles() {
+  exec('del /q /f %temp%\\*', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+
+  exec('del /q /f C:\\Windows\\Temp\\*', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+
+  exec('del /q /f C:\\Users\\%USERNAME%\\AppData\\Local\\Temp\\*', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+}
+
+// Part 57 - Disable Windows Features
+function disableWindowsFeatures() {
+  exec('sc config SysMain start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+
+  exec('sc config wuauserv start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+
+  exec('sc config DiagTrack start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+}
+
+// Part 58 - Power Plan Tweaks
+function applyPowerPlanTweaks() {
+  exec('powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 11111111-1111-1111-1111-111111111111', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+
+  exec('powercfg -setactive 11111111-1111-1111-1111-111111111111', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+
+  exec('powercfg -changename 11111111-1111-1111-1111-111111111111 SuperPower', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+}
+
+// Part 59 - Disable Apps and Services
+function disableAppsAndServices() {
+  exec('sc config "WMPNetworkSvc" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+
+  exec('sc config "PhoneSvc" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+
+  exec('sc config "MapsBroker" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+  });
+}
+
+// Running the functions
+applyGameLaunchersTweaks();
+cleanUpTemporaryFiles();
+disableWindowsFeatures();
+applyPowerPlanTweaks();
+disableAppsAndServices();
+
+
+// Part 60 - Enable Dark Mode
+function enableDarkMode() {
+    exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v "AppsUseLightTheme" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+
+    exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v "SystemUsesLightTheme" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+}
+
+// Part 61 - Disable Unnecessary Services
+function disableUnnecessaryServices() {
+    exec('sc stop "XblAuthManager"', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+
+    exec('sc stop "XblGameSave"', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+
+    exec('sc stop "XboxGipSvc"', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+
+    exec('sc stop "XboxNetApiSvc"', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+}
+
+// Part 62 - Disable Windows Defender
+function disableWindowsDefender() {
+    exec('sc config "WinDefend" start= disabled', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+
+    exec('sc config "WdNisSvc" start= disabled', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+
+    exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender" /v "DisableAntiSpyware" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+}
+
+// Part 63 - Optimize Network Settings
+function optimizeNetworkSettings() {
+    exec('netsh interface ipv4 set subinterface "Ethernet" mtu=1500 store=persistent', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+
+    exec('netsh interface ipv6 set subinterface "Ethernet" mtu=1500 store=persistent', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+
+    exec('netsh interface ip set global autotuninglevel=normal', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+
+    exec('netsh winsock reset', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+}
+
+// Part 64 - Disable Notifications
+function disableNotifications() {
+    exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisableNotificationCenter" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+
+    exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "EnableBalloonTips" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+}
+
+// Part 65 - Clean Up System Logs
+function cleanSystemLogs() {
+    exec('wevtutil sl Security /ms:48048576', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+
+    exec('wevtutil sl Application /ms:48048576', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+
+    exec('wevtutil sl Setup /ms:48048576', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+
+    exec('wevtutil sl System /ms:48048576', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+
+    exec('wevtutil sl "Windows Powershell" /ms:24048576', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+}
+
+// Part 66 - Disable Cortana
+function disableCortana() {
+    exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Search" /v "CortanaEnabled" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+
+    exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Search" /v "AllowSearchToUseLocation" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+
+    exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Search" /v "BingSearchEnabled" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+}
+
+// Part 67 - Remove Bloatware
+function removeBloatware() {
+    exec('powershell -Command "Get-AppxPackage -allusers *Xbox* | Remove-AppxPackage"', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+
+    exec('powershell -Command "Get-AppxPackage -allusers *OneDrive* | Remove-AppxPackage"', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+
+    exec('powershell -Command "Get-AppxPackage -allusers *MicrosoftOfficeHub* | Remove-AppxPackage"', (err, stdout, stderr) => {
+        if (err) console.error(err);
+    });
+}
+
+// Executing all the functions
+enableDarkMode();
+disableUnnecessaryServices();
+disableWindowsDefender();
+optimizeNetworkSettings();
+disableNotifications();
+cleanSystemLogs();
+disableCortana();
+removeBloatware();
+// Example for part 68 continuation with some of the tweaks implemented
+
+function applyPerformanceTweaks() {
+  // Example for applying performance related tweaks
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+function applyVisualTweaks() {
+  // Applying visual tweaks such as disabling transparency
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisableTransparency" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+function applyPrivacyTweaks() {
+  // Disable telemetry collection for privacy
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Telemetry" /v "AllowTelemetry" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Trigger these tweaks based on user input
+document.getElementById('applyPerformanceBtn').addEventListener('click', () => applyPerformanceTweaks());
+document.getElementById('applyVisualBtn').addEventListener('click', () => applyVisualTweaks());
+document.getElementById('applyPrivacyBtn').addEventListener('click', () => applyPrivacyTweaks());
+
+// More parts of the script for handling software installations
+function installSoftware(softwareName) {
+  const softwareLinks = {
+      malwarebytes: 'https://www.malwarebytes.com/download',
+      adwcleaner: 'https://www.malwarebytes.com/adwcleaner',
+      winrar: 'https://www.win-rar.com/start.html?&L=0',
+      nvcleanstall: 'https://www.techpowerup.com/download/techpowerup-nvcleanstall/',
+      // Add more software download links here...
+  };
+
+  const url = softwareLinks[softwareName];
+  if (url) {
+      const destPath = path.join(__dirname, `${softwareName}.exe`);
+      downloadAndInstall(url, destPath);
+  } else {
+      console.log('Software not found');
+  }
+}
+
+// Function for downloading and installing the software
+async function downloadAndInstall(url, destPath) {
+  const res = await fetch(url);
+  const fileStream = fs.createWriteStream(destPath);
+  res.body.pipe(fileStream);
+
+  fileStream.on('finish', () => {
+      exec(`start "" "${destPath}"`, (err, stdout, stderr) => {
+          if (err) {
+              console.error(`Error executing installer: ${err}`);
+          } else {
+              console.log('Software installed successfully');
+          }
+      });
+  });
+}
+function disableGameFeatures() {
+  // Disabling game features such as Xbox Game Bar
+  exec('reg add "HKCU\\Software\\Microsoft\\GameBar" /v "AllowAutoGameMode" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\GameBar" /v "ShowStartupPanel" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\GameBar" /v "UseNexusForGameBarEnabled" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\GameBar" /v "GameDVR_Enabled" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc stop "XblGameSave"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Disable Game Features
+document.getElementById('disableGameFeaturesBtn').addEventListener('click', disableGameFeatures);
+function tweakTaskbar() {
+  // Customizing the taskbar for better performance
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "TaskbarSmallIcons" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "ShowStatusBar" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "TaskbarGlomLevel" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Tweak Taskbar Settings
+document.getElementById('tweakTaskbarBtn').addEventListener('click', tweakTaskbar);
+function applyHardwareOptimizations() {
+  // Disabling unnecessary hardware features to save resources
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisableHardwareAcceleration" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisableDesktopComposition" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc stop "WMPNetworkSvc"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Apply Hardware Optimizations
+document.getElementById('applyHardwareOptimizationsBtn').addEventListener('click', applyHardwareOptimizations);
+function systemPerformanceBoost() {
+  // Enabling performance boost features
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisableWindowAnimations" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisableMenuAnimations" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisableCursorShadow" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Boost System Performance
+document.getElementById('boostSystemPerformanceBtn').addEventListener('click', systemPerformanceBoost);
+function optimizeSystemStartup() {
+  // Tweak system startup settings for quicker boot times
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "Start_TrackProgs" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "StartupDelayInMSec" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc stop "XblAuthManager"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc config "XblAuthManager" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Optimize System Startup
+document.getElementById('optimizeStartupBtn').addEventListener('click', optimizeSystemStartup);
+function disableServicesForPerformance() {
+  // Disabling unnecessary services to improve system performance
+  exec('sc stop "WerSvc"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc config "WerSvc" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc stop "WMPNetworkSvc"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc config "WMPNetworkSvc" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Disable Services for Performance
+document.getElementById('disableServicesBtn').addEventListener('click', disableServicesForPerformance);
+function disableDefenderAndTelemetry() {
+  // Disabling Windows Defender and Telemetry
+  exec('sc stop "WinDefend"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc config "WinDefend" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender" /v "DisableAntiSpyware" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Spynet" /v "DontReportInfectionInformation" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc stop "DiagTrack"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc config "DiagTrack" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Disable Defender and Telemetry
+document.getElementById('disableDefenderTelemetryBtn').addEventListener('click', disableDefenderAndTelemetry);
+function optimizeRegistryForFPS() {
+  // FPS Optimization: Adjusting Windows settings for maximum performance
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisableTaskbarTransparency" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisableDesktopComposition" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisableWindowAnimations" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisableMenuAnimations" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisableThumbnailCache" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Optimize Registry for FPS
+document.getElementById('optimizeFPSRegistryBtn').addEventListener('click', optimizeRegistryForFPS);
+function networkTweaks() {
+  // Network Optimization Tweaks
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v "MaxConnectionsPer1_0Server" /t REG_DWORD /d "16" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v "MaxConnectionsPerServer" /t REG_DWORD /d "16" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\CACHE" /v "Persistent" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKLM\\SOFTWARE\\Microsoft\\MSMQ\\Parameters" /v "IgnoreOSNameValidation" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKLM\\SOFTWARE\\Microsoft\\MSMQ\\Parameters" /v "TCPNoDelay" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Apply Network Tweaks
+document.getElementById('networkTweaksBtn').addEventListener('click', networkTweaks);
+function disableAppUpdates() {
+  // Disable app updates to prevent unnecessary background activity
+  exec('sc stop "GoogleUpdateTaskMachineCore"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc config "GoogleUpdateTaskMachineCore" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc stop "GoogleUpdateTaskMachineUA"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc config "GoogleUpdateTaskMachineUA" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKLM\\SOFTWARE\\Policies\\Google\\Chrome" /v "MetricsReportingEnabled" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Disable App Updates
+document.getElementById('disableAppUpdatesBtn').addEventListener('click', disableAppUpdates);
+function optimizeMemoryUsage() {
+  // Disable memory compression and page combining for better memory management
+  exec('powershell "Disable-MMAgent -MemoryCompression"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('powershell "Disable-MMAgent -PageCombining"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc stop SysMain', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc config SysMain start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Optimize Memory Usage
+document.getElementById('optimizeMemoryBtn').addEventListener('click', optimizeMemoryUsage);
+function disableBackgroundApps() {
+  // Disable background apps to free up system resources
+  exec('sc stop "BackgroundTasks"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc config "BackgroundTasks" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\BackgroundAccessApplications" /v "Allow" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Disable Background Apps
+document.getElementById('disableBackgroundAppsBtn').addEventListener('click', disableBackgroundApps);
+// More Network Tweaks
+function applyNetworkTweaks() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v "MaxConnectionsPer1_0Server" /t REG_DWORD /d "16" /f', (err, stdout, stderr) => {
+    if (err) console.error(err);
+  });
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v "MaxConnectionsPerServer" /t REG_DWORD /d "16" /f', (err, stdout, stderr) => {
+    if (err) console.error(err);
+  });
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\CACHE" /v "Persistent" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+    if (err) console.error(err);
+  });
+  exec('reg add "HKLM\\SOFTWARE\\Microsoft\\MSMQ\\Parameters" /v "IgnoreOSNameValidation" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+    if (err) console.error(err);
+  });
+  exec('reg add "HKLM\\SOFTWARE\\Microsoft\\MSMQ\\Parameters" /v "TCPNoDelay" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+    if (err) console.error(err);
+  });
+  exec('reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\EMDMgmt" /v "AllowNewCachesByDefault" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+    if (err) console.error(err);
+  });
+  exec('reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\EMDMgmt" /v "GroupPolicyDisallowCaches" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+    if (err) console.error(err);
+  });
+}
+function disableUnnecessaryServices() {
+  // Disabling non-essential services to free up system resources
+  exec('sc stop "WMPNetworkSvc"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc config "WMPNetworkSvc" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc stop "XblGameSave"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc config "XblGameSave" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Disable Unnecessary Services
+document.getElementById('disableServicesBtn').addEventListener('click', disableUnnecessaryServices);
+function optimizeVisualEffects() {
+  // Adjusting visual effects for better performance
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects" /v "VisualFXSetting" /t REG_DWORD /d "2" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects" /v "DisableAnimations" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Optimize Visual Effects
+document.getElementById('optimizeVisualEffectsBtn').addEventListener('click', optimizeVisualEffects);
+function enhanceProcessorPerformance() {
+  // Setting processor performance to high
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile" /v "SystemResponsiveness" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile" /v "NetworkThrottlingIndex" /t REG_DWORD /d "4294967295" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Enhance Processor Performance
+document.getElementById('enhanceProcessorPerformanceBtn').addEventListener('click', enhanceProcessorPerformance);
+function disableWindowsDefender() {
+  // Disabling Windows Defender for performance
+  exec('sc stop "WinDefend"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc config "WinDefend" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Disable Windows Defender
+document.getElementById('disableDefenderBtn').addEventListener('click', disableWindowsDefender);
+function clearSystemCache() {
+  // Clearing system cache to free up memory
+  exec('del /q /f /s %TEMP%', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('del /q /f /s %windir%\\temp\\*.*', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Clear System Cache
+document.getElementById('clearCacheBtn').addEventListener('click', clearSystemCache);
+function disableWindowsSearch() {
+  // Disabling Windows Search to improve performance
+  exec('sc stop "WSearch"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc config "WSearch" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Disable Windows Search
+document.getElementById('disableSearchBtn').addEventListener('click', disableWindowsSearch);
+function disableWindowsUpdate() {
+  // Disabling Windows Update service to prevent automatic updates
+  exec('sc stop "wuauserv"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc config "wuauserv" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Disable Windows Update
+document.getElementById('disableUpdateBtn').addEventListener('click', disableWindowsUpdate);
+function enableGameMode() {
+  // Enabling Game Mode for better gaming performance
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR" /v "GameModeEnabled" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Enable Game Mode
+document.getElementById('enableGameModeBtn').addEventListener('click', enableGameMode);
+function disableUnnecessaryServices() {
+  // Disabling non-essential services to free up system resources
+  exec('sc stop "WMPNetworkSvc"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc config "WMPNetworkSvc" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc stop "XblGameSave"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc config "XblGameSave" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Disable Unnecessary Services
+document.getElementById('disableServicesBtn').addEventListener('click', disableUnnecessaryServices);
+function optimizeVisualEffects() {
+  // Adjusting visual effects for better performance
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects" /v "VisualFXSetting" /t REG_DWORD /d "2" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects" /v "DisableAnimations" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Optimize Visual Effects
+document.getElementById('optimizeVisualEffectsBtn').addEventListener('click', optimizeVisualEffects);
+function enhanceProcessorPerformance() {
+  // Setting processor performance to high
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile" /v "SystemResponsiveness" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile" /v "NetworkThrottlingIndex" /t REG_DWORD /d "4294967295" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Enhance Processor Performance
+document.getElementById('enhanceProcessorPerformanceBtn').addEventListener('click', enhanceProcessorPerformance);
+function disableWindowsDefender() {
+  // Disabling Windows Defender for performance
+  exec('sc stop "WinDefend"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc config "WinDefend" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Disable Windows Defender
+document.getElementById('disableDefenderBtn').addEventListener('click', disableWindowsDefender);
+function clearSystemCache() {
+  // Clearing system cache to free up memory
+  exec('del /q /f /s %TEMP%', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('del /q /f /s %windir%\\temp\\*.*', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Clear System Cache
+document.getElementById('clearCacheBtn').addEventListener('click', clearSystemCache);
+function disableWindowsSearch() {
+  // Disabling Windows Search to improve performance
+  exec('sc stop "WSearch"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc config "WSearch" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Disable Windows Search
+document.getElementById('disableSearchBtn').addEventListener('click', disableWindowsSearch);
+function disableWindowsUpdate() {
+  // Disabling Windows Update service to prevent automatic updates
+  exec('sc stop "wuauserv"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc config "wuauserv" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Disable Windows Update
+document.getElementById('disableUpdateBtn').addEventListener('click', disableWindowsUpdate);
+function enableGameMode() {
+  // Enabling Game Mode for better gaming performance
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR" /v "GameModeEnabled" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Enable Game Mode
+document.getElementById('enableGameModeBtn').addEventListener('click', enableGameMode);
