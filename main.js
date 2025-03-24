@@ -817,6 +817,138 @@ function changeTaskbarIconSize() {
   });
 }
 
+
+// Privacy Tweaks 40 - Disable Cortana completely (advanced)
+function disableCortanaCompletely() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Search" /v "CortanaEnabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Cortana:', err);
+  });
+  exec('powershell -Command "Get-AppxPackage *Microsoft.Cortana* | Remove-AppxPackage"', (err, stdout, stderr) => {
+    if (err) console.error('Error removing Cortana app:', err);
+  });
+}
+
+// Privacy Tweaks 41 - Disable Windows Ink Workspace
+function disableWindowsInk() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\PenWorkspace" /v "PenWorkspaceButtonDesiredVisibility" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Windows Ink Workspace:', err);
+  });
+}
+
+// Privacy Tweaks 42 - Disable Windows Feedback
+function disableWindowsFeedback() {
+  exec('reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Feedback" /v "EnableFeedback" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling feedback:', err);
+  });
+}
+
+// Privacy Tweaks 43 - Disable Windows error reporting
+function disableErrorReporting() {
+  exec('sc config WerSvc start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling error reporting service:', err);
+  });
+  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\ErrorReporting" /v "DoReport" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling error reporting:', err);
+  });
+}
+
+// Privacy Tweaks 44 - Disable automatic error reporting for Microsoft apps
+function disableAppErrorReporting() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\AppHost" /v "EnableWebContentEvaluation" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling app error reporting:', err);
+  });
+}
+// Network Tweaks 40 - Disable Windows Background Intelligent Transfer Service (BITS)
+function disableBITS() {
+  exec('sc stop "BITS"', (err, stdout, stderr) => {
+    if (err) console.error('Error stopping BITS service:', err);
+  });
+  exec('sc config "BITS" start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling BITS service:', err);
+  });
+}
+
+// Network Tweaks 41 - Set DNS to Google DNS (8.8.8.8 and 8.8.4.4)
+function setGoogleDNS() {
+  exec('netsh interface ipv4 set dns name="Ethernet" static 8.8.8.8', (err, stdout, stderr) => {
+    if (err) console.error('Error setting Google DNS (IPv4):', err);
+  });
+  exec('netsh interface ipv6 set dns name="Ethernet" static 2001:4860:4860::8888', (err, stdout, stderr) => {
+    if (err) console.error('Error setting Google DNS (IPv6):', err);
+  });
+}
+
+// Network Tweaks 42 - Enable Jumbo Frame
+function enableJumboFrame() {
+  exec('netsh interface ipv4 set subinterface "Ethernet" mtu=9000 store=persistent', (err, stdout, stderr) => {
+    if (err) console.error('Error enabling Jumbo Frame:', err);
+  });
+  exec('netsh interface ipv6 set subinterface "Ethernet" mtu=9000 store=persistent', (err, stdout, stderr) => {
+    if (err) console.error('Error enabling Jumbo Frame:', err);
+  });
+}
+
+// Network Tweaks 43 - Disable IPv6 (for better network performance)
+function disableIPv6Completely() {
+  exec('netsh interface ipv6 set teredo disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling IPv6:', err);
+  });
+  exec('netsh interface ipv6 set state disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling IPv6 state:', err);
+  });
+}
+
+// Network Tweaks 44 - Reset TCP/IP stack
+function resetTcpIpStack() {
+  exec('netsh int ip reset', (err, stdout, stderr) => {
+    if (err) console.error('Error resetting TCP/IP stack:', err);
+  });
+}
+// Power Plan Tweaks 40 - Set power plan to maximum performance (disable power saving)
+function setMaxPerformancePowerPlan() {
+  exec('powercfg -setactive SCHEME_MAX', (err, stdout, stderr) => {
+    if (err) console.error('Error setting maximum performance power plan:', err);
+  });
+}
+
+// Power Plan Tweaks 41 - Disable Hybrid Sleep
+function disableHybridSleep() {
+  exec('reg add "HKCU\\Control Panel\\PowerCfg" /v "HibernateEnabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Hybrid Sleep:', err);
+  });
+}
+
+// Power Plan Tweaks 42 - Disable system cooling (increase CPU performance)
+function disableSystemCooling() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "TaskbarSmallIcons" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling system cooling policy:', err);
+  });
+}
+
+// Power Plan Tweaks 43 - Set high-performance graphics settings
+function setHighPerformanceGraphics() {
+  exec('powercfg -setacvalueindex 381b4222-f694-41f0-9685-ff5bb260df2e 5fb4938d-1ee8-4b0f-9a3c-5036b0ab995c dd848b2a-8a5d-4451-9ae2-39cd41658f6c 2', (err, stdout, stderr) => {
+    if (err) console.error('Error setting high-performance graphics:', err);
+  });
+}
+
+// Power Plan Tweaks 44 - Disable sleep mode (keep the system awake)
+function disableSleepMode() {
+  exec('powercfg -change standby-timeout-ac 0', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling sleep mode:', err);
+  });
+  exec('powercfg -change standby-timeout-dc 0', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling sleep mode for battery:', err);
+  });
+}
+
+// Power Plan Tweaks 45 - Disable PCIe Link State Power Management
+function disablePCIePowerManagement() {
+  exec('reg add "HKCU\\Control Panel\\PowerCfg" /v "DisableLinkStatePowerManagement" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling PCIe Link State Power Management:', err);
+  });
+}
+
 // Apply all final optimizations and settings
 function applyFinalOptimizations() {
   disableUnwantedServices();
