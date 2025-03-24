@@ -1399,6 +1399,113 @@ function disableTeredoTunneling() {
     if (err) console.error('Error disabling Teredo tunneling:', err);
   });
 }
+// RAM Tweaks 1 - Optimize RAM for 4GB Systems
+function optimizeFor4GB() {
+  exec('bcdedit /set IncreaseUserVa 3072', (err, stdout, stderr) => {
+    if (err) console.error('Error optimizing for 4GB RAM:', err);
+  });
+  exec('wmic memorychip set speed=1600', (err, stdout, stderr) => {
+    if (err) console.error('Error optimizing RAM speed for 4GB:', err);
+  });
+}
+
+// RAM Tweaks 2 - Optimize RAM for 8GB Systems
+function optimizeFor8GB() {
+  exec('bcdedit /set IncreaseUserVa 4096', (err, stdout, stderr) => {
+    if (err) console.error('Error optimizing for 8GB RAM:', err);
+  });
+  exec('wmic memorychip set speed=2400', (err, stdout, stderr) => {
+    if (err) console.error('Error optimizing RAM speed for 8GB:', err);
+  });
+}
+
+// RAM Tweaks 3 - Optimize RAM for 16GB Systems
+function optimizeFor16GB() {
+  exec('bcdedit /set IncreaseUserVa 8192', (err, stdout, stderr) => {
+    if (err) console.error('Error optimizing for 16GB RAM:', err);
+  });
+  exec('wmic memorychip set speed=2666', (err, stdout, stderr) => {
+    if (err) console.error('Error optimizing RAM speed for 16GB:', err);
+  });
+}
+
+// RAM Tweaks 4 - Optimize RAM for 32GB Systems
+function optimizeFor32GB() {
+  exec('bcdedit /set IncreaseUserVa 16384', (err, stdout, stderr) => {
+    if (err) console.error('Error optimizing for 32GB RAM:', err);
+  });
+  exec('wmic memorychip set speed=2933', (err, stdout, stderr) => {
+    if (err) console.error('Error optimizing RAM speed for 32GB:', err);
+  });
+}
+
+// RAM Tweaks 5 - Disable RAM compression for better performance
+function disableRamCompression() {
+  exec('powershell "Disable-MMAgent -MemoryCompression"', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling RAM compression:', err);
+  });
+}
+// Gaming Tweaks 1 - Disable unnecessary background apps during gaming
+function disableBackgroundAppsForGaming() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\BackgroundAccessApplications" /v "LetAppsRunInBackground" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling background apps for gaming:', err);
+  });
+}
+
+// Gaming Tweaks 2 - Optimize CPU cores for gaming
+function optimizeCpuForGaming() {
+  exec('bcdedit /set numprocthreads 8', (err, stdout, stderr) => {
+    if (err) console.error('Error optimizing CPU cores for gaming:', err);
+  });
+}
+
+// Gaming Tweaks 3 - Set game mode for better performance
+function enableGameMode() {
+  exec('reg add "HKCU\\Software\\Microsoft\\GameBar" /v "GameModeEnabled" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error enabling Game Mode:', err);
+  });
+}
+
+// Gaming Tweaks 4 - Disable Game DVR for improved FPS
+function disableGameDVRForPerformance() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Game DVR:', err);
+  });
+}
+
+// Gaming Tweaks 5 - Optimize disk performance for gaming
+function optimizeDiskForGaming() {
+  exec('reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisableDiskOptimization" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error optimizing disk for gaming:', err);
+  });
+}
+// Privacy Tweaks 57 - Disable SmartScreen for enhanced privacy
+function disableSmartScreen() {
+  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System" /v "EnableSmartScreen" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling SmartScreen:', err);
+  });
+}
+
+// Privacy Tweaks 58 - Disable advertising ID tracking
+function disableAdIdTracking() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo" /v "Enabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling advertising ID tracking:', err);
+  });
+}
+
+// Privacy Tweaks 59 - Disable Windows Data Collection
+function disableWindowsDataCollection() {
+  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling data collection:', err);
+  });
+}
+
+// Privacy Tweaks 60 - Disable Windows Location Services
+function disableLocationServices() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Geolocation" /v "Enabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling location services:', err);
+  });
+}
 
 // Apply all final optimizations and settings
 function applyFinalOptimizations() {
