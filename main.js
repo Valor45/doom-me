@@ -2897,3 +2897,32 @@ function disablePrintSpooler() {
 
 // Disable Print Spooler
 document.getElementById('disablePrintSpoolerBtn').addEventListener('click', disablePrintSpooler);
+function enableReadyBoost() {
+  // Insert your USB flash drive and identify its drive letter
+  const driveLetter = 'E:'; // Example: 'E:'
+  exec(`fsutil behavior set memoryusage 1`, (err, stdout, stderr) => {
+      if (err) {
+          console.error('Error enabling ReadyBoost:', err);
+          return;
+      }
+      console.log('ReadyBoost enabled successfully.');
+  });
+}
+function adjustVirtualMemory() {
+  exec('wmic pagefileset where name="C:\\pagefile.sys" set InitialSize=4096,MaximumSize=8192', (err, stdout, stderr) => {
+      if (err) {
+          console.error('Error adjusting virtual memory:', err);
+          return;
+      }
+      console.log('Virtual memory settings adjusted successfully.');
+  });
+}
+function disableTransparencyEffects() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v "EnableTransparency" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+      if (err) {
+          console.error('Error disabling transparency effects:', err);
+          return;
+      }
+      console.log('Transparency effects disabled successfully.');
+  });
+}
