@@ -1566,6 +1566,53 @@ function disableAdvertisingId() {
     if (err) console.error('Error disabling advertising ID:', err);
   });
 }
+// FPS Tweaks 71 - Disable Prefetch for faster boot times
+function disablePrefetch() {
+  exec('reg add "HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Memory Management\\PrefetchParameters" /v "EnablePrefetcher" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling prefetch:', err);
+  });
+}
+
+// FPS Tweaks 72 - Set CPU priority for high performance tasks
+function setCpuPriorityForHighTasks() {
+  exec('reg add "HKCU\\Control Panel\\Desktop" /v "ProcessorScheduling" /t REG_DWORD /d 2 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error setting CPU priority:', err);
+  });
+}
+// Visual Tweaks 26 - Disable smooth scrolling in browsers
+function disableSmoothScrolling() {
+  exec('reg add "HKCU\\Control Panel\\Desktop" /v "SmoothScrolling" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling smooth scrolling:', err);
+  });
+}
+
+// Visual Tweaks 27 - Enable extra menu delay for context menus
+function enableMenuDelay() {
+  exec('reg add "HKCU\\Control Panel\\Desktop" /v "MenuShowDelay" /t REG_DWORD /d 500 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error enabling menu delay:', err);
+  });
+}
+// Visual Tweaks 26 - Disable smooth scrolling in browsers
+function disableSmoothScrolling() {
+  exec('reg add "HKCU\\Control Panel\\Desktop" /v "SmoothScrolling" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling smooth scrolling:', err);
+  });
+}
+
+// Privacy Tweaks 64 - Disable automatic app updates for Store apps
+function disableStoreAppUpdates() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Appx" /v "PackageInstallAndUpdateBehavior" /t REG_DWORD /d 2 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling automatic app updates:', err);
+  });
+}
+
+// Privacy Tweaks 65 - Disable location tracking for apps
+function disableLocationTracking() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Geolocation" /v "Enabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling location tracking:', err);
+  });
+}
+
 
 // Apply all final optimizations and settings
 function applyFinalOptimizations() {
