@@ -1,4 +1,4 @@
-// 1) Sidebar navigation
+// Sidebar navigation
 document.querySelectorAll('.sidebar ul li[data-section]').forEach(item => {
   item.addEventListener('click', () => {
     document.querySelectorAll('.sidebar ul li').forEach(li => li.classList.remove('active'));
@@ -9,72 +9,102 @@ document.querySelectorAll('.sidebar ul li[data-section]').forEach(item => {
   });
 });
 
-// 2) Toggling all tweaks at once
-document.getElementById('toggleAll').addEventListener('click', () => {
-  document.querySelectorAll('input[type=checkbox]').forEach(chk => {
-    chk.checked = true;
-    window.electronAPI.applyToggle(chk.id.replace('toggle_', ''), true);
-  });
+// Apply All Recommended Tweaks button
+document.getElementById('applyAllBtn')?.addEventListener('click', () => {
+  if (confirm("Apply all recommended tweaks? This will enable multiple system optimizations.")) {
+    window.electronAPI.applyAllTweaks().then(() => {
+      alert("All recommended tweaks have been applied!");
+    });
+  }
 });
 
-// 3) Hiding the tweak code when applied
+// Toggle event handlers for all tweaks
 document.querySelectorAll('input[type=checkbox][id^="toggle_"]').forEach(chk => {
   chk.addEventListener('change', () => {
-    let baseId = chk.id.replace('toggle_', '');
-    if (baseId.endsWith('_rec')) {
-      let mainId = baseId.slice(0, -4);
-      const mainChk = document.getElementById('toggle_' + mainId);
-      if (mainChk) mainChk.checked = chk.checked;
-      window.electronAPI.applyToggle(mainId, chk.checked);
-    } else {
-      window.electronAPI.applyToggle(baseId, chk.checked);
-      const recChk = document.getElementById(chk.id + '_rec');
-      if (recChk) recChk.checked = chk.checked;
-    }
+    const tweakName = chk.id.replace('toggle_', '');
+    window.electronAPI.applyToggle(tweakName, chk.checked);
   });
 });
 
-// 4) System info updates
+// System info updates
 window.electronAPI.onSystemInfo(info => {
   const { cpu, gpu, ram } = info;
-  document.getElementById('cpuName').innerText = cpu;
-  document.getElementById('gpuName').innerText = gpu;
-  document.getElementById('ram-info').innerText = ram;
+  document.getElementById('cpu-info').innerText = cpu;
+  document.getElementById('gpu-info').innerText = gpu;
+  document.getElementById('ram-info').innerText = (ram / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
 });
 
-// 5) CPU/Memory usage
+// CPU/Memory usage updates
 window.electronAPI.onUsageUpdate((cpuPercent, ramPercent) => {
-  document.getElementById('cpuUsage').innerText = cpuPercent + '%';
-  document.getElementById('memUsage').innerText = ramPercent + '%';
+  document.getElementById('cpu-usage').innerText = cpuPercent + '%';
+  document.getElementById('ram-usage').innerText = ramPercent + '%';
 });
 
-// 6) Backup/Benchmark
+// Backup/Benchmark buttons
 document.getElementById('backupBtn')?.addEventListener('click', () => {
   window.electronAPI.sendRestorePoint().then(success => {
-    alert(success ? "System restore point created." : "Failed to create restore point.");
-  });
-});
-document.getElementById('benchmarkBtn')?.addEventListener('click', () => {
-  window.electronAPI.runBenchmark().then(res => {
-    alert(`Benchmark result:\nFPS: ${res.fps}\nCPU: ${res.cpu}%\nGPU: ${res.gpu}%`);
+    alert(success ? "System restore point created successfully!" : "Failed to create restore point.");
   });
 });
 
-// 7) Software Install
+document.getElementById('benchmarkBtn')?.addEventListener('click', () => {
+  window.electronAPI.runBenchmark().then(res => {
+    alert(`Benchmark results:\nFPS: ${res.fps}\nCPU Usage: ${res.cpu}%\nGPU Usage: ${res.gpu}%`);
+  });
+});
+
+// Software Installation
 function installSoft(name) {
-  if (confirm("Install " + name + "?")) {
+  if (confirm(`Install ${name}? This will download and launch the installer.`)) {
     window.electronAPI.installSoftware(name).then(() => {
-      alert(name + " installer is launching...");
+      alert(`${name} installer is launching...`);
+    }).catch(err => {
+      alert(`Failed to install ${name}: ${err}`);
     });
   }
 }
 
-// 8) Admin logic
+// Admin section logic
 window.electronAPI.onUserData(data => {
   if (data.isAdmin) {
-    document.getElementById('adminNavItem').style.display = 'block';
+    document.getElementById('adminNav').style.display = 'block';
   }
 });
+
+// Initialize the dashboard
+document.addEventListener('DOMContentLoaded', () => {
+  // Load initial system info
+  window.electronAPI.getSystemInfo();
+  
+  // Start usage monitoring
+  setInterval(() => {
+    window.electronAPI.getUsage();
+  }, 2000);
+  
+  // Set default section to dashboard
+  document.querySelector('.sidebar ul li[data-section="dashboard"]').click();
+});
+
+// Additional IPC handlers for specific tweak feedback
+window.electronAPI.onTweakApplied((tweakName, success) => {
+  const toggle = document.getElementById(`toggle_${tweakName}`);
+  if (toggle) {
+    if (success) {
+      toggle.parentNode.classList.add('applied');
+      setTimeout(() => toggle.parentNode.classList.remove('applied'), 1000);
+    } else {
+      toggle.checked = !toggle.checked;
+      alert(`Failed to apply ${tweakName} tweak`);
+    }
+  }
+});
+
+// Handle apply all tweaks feedback
+window.electronAPI.onAllTweaksApplied((successCount, totalCount) => {
+  alert(`Applied ${successCount} out of ${totalCount} tweaks successfully!`);
+});
+
+// Admin section functions
 document.getElementById('pushBtn')?.addEventListener('click', () => {
   const fileInput = document.getElementById('configFile');
   if (fileInput.files.length > 0) {
@@ -82,27 +112,35 @@ document.getElementById('pushBtn')?.addEventListener('click', () => {
     const reader = new FileReader();
     reader.onload = () => {
       window.electronAPI.pushConfig(reader.result).then(success => {
-        alert(success ? "Tweak file uploaded." : "Failed to upload file.");
+        alert(success ? "Configuration file uploaded successfully!" : "Failed to upload configuration file.");
       });
     };
     reader.readAsText(file);
+  } else {
+    alert("Please select a configuration file first.");
   }
 });
+
 document.getElementById('logsBtn')?.addEventListener('click', () => {
-  window.electronAPI.getLogs().then(txt => {
-    document.getElementById('adminOutput').value = txt;
+  window.electronAPI.getLogs().then(logs => {
+    const logsOutput = document.getElementById('adminOutput');
+    if (logsOutput) {
+      logsOutput.value = logs;
+    } else {
+      alert("Logs output element not found!");
+    }
   });
 });
+
 document.getElementById('keysBtn')?.addEventListener('click', () => {
-  window.electronAPI.getKeyStatus().then(kArr => {
-    let out = "Key - Type - Status\n";
-    kArr.forEach(k => {
-      out += `${k.key} - ${k.type} - `;
-      if (k.boundTo) out += `Bound to ${k.boundTo}`;
-      else out += 'Available';
-      if (k.expires) out += ` (expires: ${k.expires})`;
-      out += "\n";
-    });
-    document.getElementById('adminOutput').value = out;
+  window.electronAPI.getKeyStatus().then(keys => {
+    const keysOutput = document.getElementById('adminOutput');
+    if (keysOutput) {
+      keysOutput.value = keys.map(k => 
+        `${k.key} - ${k.type} - ${k.boundTo ? `Bound to ${k.boundTo}` : 'Available'}${k.expires ? ` (expires: ${k.expires})` : ''}`
+      ).join('\n');
+    } else {
+      alert("Keys output element not found!");
+    }
   });
 });
