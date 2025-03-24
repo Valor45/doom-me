@@ -1,0 +1,7 @@
+CMD Commands:
+
+fsutil behavior query memoryusage
+
+fsutil behavior set memoryusage 2
+
+bcdedit /set increaseuserva 4000
