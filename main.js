@@ -1232,6 +1232,173 @@ function turnOffLocationServices() {
     if (err) console.error('Error turning off location services:', err);
   });
 }
+// FPS Tweaks 61 - Disable Core Parking for Performance Boost
+function disableCoreParking() {
+  exec('reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerSettings\\54533251-82be-4824-96c1-47b60b740d00\\0cc5b647-c1df-4637-891a-dec35c318583" /v "ValueMax" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling core parking:', err);
+  });
+}
+
+// FPS Tweaks 62 - Disable Dynamic Tick for Faster Performance
+function disableDynamicTick() {
+  exec('bcdedit /set disabledynamictick yes', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling dynamic tick:', err);
+  });
+}
+
+// FPS Tweaks 63 - Set Maximum Processor State to 100%
+function setMaxProcessorState() {
+  exec('powercfg /setacvalueindex SCHEME_MAX SUB_PROCESSOR PROCTHROTTLEMAX 100', (err, stdout, stderr) => {
+    if (err) console.error('Error setting max processor state:', err);
+  });
+}
+
+// FPS Tweaks 64 - Disable Memory Compression (Windows 10/11)
+function disableMemoryCompression() {
+  exec('powershell "Disable-MMAgent -MemoryCompression"', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling memory compression:', err);
+  });
+}
+
+// FPS Tweaks 65 - Adjust CPU Thread Priority for High Performance
+function setCpuThreadPriority() {
+  exec('bcdedit /set numprocthreads 16', (err, stdout, stderr) => {
+    if (err) console.error('Error adjusting CPU thread priority:', err);
+  });
+}
+// Visual Tweaks 16 - Enable Dark Mode for System
+function enableDarkMode() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v "AppsUseLightTheme" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error enabling Dark Mode:', err);
+  });
+}
+
+// Visual Tweaks 17 - Disable Transparency Effects
+function disableTransparency() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v "EnableTransparency" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling transparency:', err);
+  });
+}
+
+// Visual Tweaks 18 - Show Taskbar in Small Icons Mode
+function setSmallTaskbarIcons() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "TaskbarSmallIcons" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error setting small taskbar icons:', err);
+  });
+}
+
+// Visual Tweaks 19 - Disable Taskbar Glomming (grouping taskbar icons)
+function disableTaskbarGrouping() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "TaskbarGlomLevel" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling taskbar grouping:', err);
+  });
+}
+
+// Visual Tweaks 20 - Enable Classic Context Menu for File Explorer
+function enableClassicContextMenu() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "ExtendedUIHoverTime" /t REG_DWORD /d 100 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error enabling classic context menu:', err);
+  });
+}
+
+// Privacy Tweaks 50 - Disable Windows Consumer Features (reduce privacy data sharing)
+function disableConsumerFeatures() {
+  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent" /v "DisableWindowsConsumerFeatures" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling consumer features:', err);
+  });
+}
+
+// Privacy Tweaks 51 - Disable Windows Insider Program Data Collection
+function disableInsiderDataCollection() {
+  exec('reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Insider Data Collection:', err);
+  });
+}
+
+// Privacy Tweaks 52 - Disable Cloud-Based App Data Collection
+function disableCloudAppDataCollection() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager" /v "ContentDeliveryAllowed" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling cloud app data collection:', err);
+  });
+}
+
+// Privacy Tweaks 53 - Disable All Telemetry Features
+function disableAllTelemetry() {
+  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling all telemetry:', err);
+  });
+}
+
+// Privacy Tweaks 54 - Disable Windows Error Reporting
+function disableErrorReportingService() {
+  exec('sc stop WerSvc', (err, stdout, stderr) => {
+    if (err) console.error('Error stopping Windows Error Reporting service:', err);
+  });
+  exec('sc config WerSvc start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Windows Error Reporting service:', err);
+  });
+}
+// FPS Tweaks 66 - Disable background services for gaming
+function disableBackgroundServices() {
+  exec('sc stop "SysMain"', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling SysMain:', err);
+  });
+  exec('sc stop "wuauserv"', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Windows Update:', err);
+  });
+  exec('sc stop "WerSvc"', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling WerSvc:', err);
+  });
+}
+
+// FPS Tweaks 67 - Enable CPU performance mode for high loads
+function enableCpuPerformanceMode() {
+  exec('bcdedit /set {current} priority 8', (err, stdout, stderr) => {
+    if (err) console.error('Error setting CPU performance mode:', err);
+  });
+}
+// Visual Tweaks 21 - Disable Taskbar Transparency
+function disableTaskbarTransparency() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v "EnableTransparency" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling taskbar transparency:', err);
+  });
+}
+
+// Visual Tweaks 22 - Enable Aero Glass effects
+function enableAeroGlass() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\DWM" /v "AeroGlass" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error enabling Aero Glass:', err);
+  });
+}
+// Privacy Tweaks 55 - Disable Telemetry and Data Collection
+function disableTelemetryAndDataCollection() {
+  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling telemetry and data collection:', err);
+  });
+}
+
+// Privacy Tweaks 56 - Disable Windows Defender Cloud Protection
+function disableDefenderCloudProtection() {
+  exec('reg add "HKLM\\SOFTWARE\\Microsoft\\Windows Defender\\Spynet" /v "SpyNetReporting" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling cloud protection in Defender:', err);
+  });
+}
+// Network Tweaks 16 - Set MTU for faster internet speeds
+function setMTUForInternet() {
+  exec('netsh interface ipv4 set subinterface "Ethernet" mtu=1500 store=persistent', (err, stdout, stderr) => {
+    if (err) console.error('Error setting MTU for Ethernet:', err);
+  });
+  exec('netsh interface ipv6 set subinterface "Ethernet" mtu=1500 store=persistent', (err, stdout, stderr) => {
+    if (err) console.error('Error setting MTU for IPv6:', err);
+  });
+}
+
+// Network Tweaks 17 - Disable Teredo Tunneling (improves internet speed)
+function disableTeredoTunneling() {
+  exec('netsh interface ipv6 set teredo disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Teredo tunneling:', err);
+  });
+}
 
 // Apply all final optimizations and settings
 function applyFinalOptimizations() {
