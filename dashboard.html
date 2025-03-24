@@ -164,6 +164,56 @@
     <span class="toggle-label">Disable Windows Defender</span>
   </div>
 </div>
+<!-- More Visual Tweaks Section -->
+<div id="section-visual" class="section" style="display:none;">
+  <h2>Visual Tweaks</h2>
+  <div class="toggle-item">
+    <label class="switch"><input type="checkbox" id="toggle_disable_transparency"><span class="slider"></span></label>
+    <span class="toggle-label">Disable Transparency Effects</span>
+  </div>
+  <div class="toggle-item">
+    <label class="switch"><input type="checkbox" id="toggle_show_seconds_in_taskbar_clock"><span class="slider"></span></label>
+    <span class="toggle-label">Show Seconds in Taskbar Clock</span>
+  </div>
+</div>
+
+<!-- More Privacy Tweaks Section -->
+<div id="section-privacy" class="section" style="display:none;">
+  <h2>Privacy Tweaks</h2>
+  <div class="toggle-item">
+    <label class="switch"><input type="checkbox" id="toggle_disable_edge_tracking"><span class="slider"></span></label>
+    <span class="toggle-label">Disable Edge Tracking</span>
+  </div>
+  <div class="toggle-item">
+    <label class="switch"><input type="checkbox" id="toggle_disable_app_tracking"><span class="slider"></span></label>
+    <span class="toggle-label">Disable App Tracking</span>
+  </div>
+  <div class="toggle-item">
+    <label class="switch"><input type="checkbox" id="toggle_disable_web_search"><span class="slider"></span></label>
+    <span class="toggle-label">Disable Web Search</span>
+  </div>
+</div>
+
+<!-- Software Installation Section -->
+<div id="section-software" class="section" style="display:none;">
+  <h2>Software Installation</h2>
+  <p>Click to install (requires internet):</p>
+  <ul class="soft-list">
+    <li><button onclick="installSoft('Malwarebytes')">Install Malwarebytes</button></li>
+    <li><button onclick="installSoft('ADWCleaner')">Install ADWCleaner</button></li>
+    <li><button onclick="installSoft('NVcleanstall')">Install NVCleanstall</button></li>
+    <li><button onclick="installSoft('Nvidia Profile Inspector')">Install Nvidia Profile Inspector</button></li>
+    <li><button onclick="installSoft('WinRAR')">Install WinRAR</button></li>
+    <li><button onclick="installSoft('ParkControl')">Install ParkControl</button></li>
+    <li><button onclick="installSoft('Process Lasso')">Install Process Lasso</button></li>
+    <li><button onclick="installSoft('Google Chrome')">Install Google Chrome</button></li>
+    <li><button onclick="installSoft('Steam')">Install Steam</button></li>
+    <li><button onclick="installSoft('Epic Games')">Install Epic Games</button></li>
+    <li><button onclick="installSoft('Nvidia App')">Install Nvidia App</button></li>
+    <li><button onclick="installSoft('AMD Software')">Install AMD Software</button></li>
+    <li><button onclick="installSoft('DDU Uninstaller')">Install DDU Uninstaller</button></li>
+  </ul>
+</div>
 
   <!-- FontAwesome for icons -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
