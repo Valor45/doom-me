@@ -1506,6 +1506,66 @@ function disableLocationServices() {
     if (err) console.error('Error disabling location services:', err);
   });
 }
+// FPS Tweaks 68 - Adjust CPU priority for gaming applications
+function adjustCpuPriority() {
+  exec('bcdedit /set {current} affinity 0x01', (err, stdout, stderr) => {
+    if (err) console.error('Error adjusting CPU priority:', err);
+  });
+}
+
+// FPS Tweaks 69 - Set system responsiveness to high for gaming
+function setSystemResponsiveness() {
+  exec('reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile" /v "SystemResponsiveness" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error setting system responsiveness:', err);
+  });
+}
+
+// FPS Tweaks 70 - Enable Multi-Threaded Performance
+function enableMultiThreaded() {
+  exec('bcdedit /set numproc 16', (err, stdout, stderr) => {
+    if (err) console.error('Error enabling multi-threaded performance:', err);
+  });
+}
+// Visual Tweaks 23 - Disable screen flicker from Windows animations
+function disableScreenFlicker() {
+  exec('reg add "HKCU\\Control Panel\\Desktop" /v "ScreenFlicker" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling screen flicker:', err);
+  });
+}
+
+// Visual Tweaks 24 - Change mouse cursor speed for better gaming response
+function changeMouseCursorSpeed() {
+  exec('reg add "HKCU\\Control Panel\\Mouse" /v "MouseSpeed" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error changing mouse cursor speed:', err);
+  });
+}
+
+// Visual Tweaks 25 - Disable Snap Assist for better window management
+function disableSnapAssist() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisableSnap" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Snap Assist:', err);
+  });
+}
+// Privacy Tweaks 61 - Disable Windows 10 telemetry and data collection completely
+function disableWindowsTelemetry() {
+  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling telemetry:', err);
+  });
+}
+
+// Privacy Tweaks 62 - Prevent Cortana from collecting data
+function preventCortanaDataCollection() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Search" /v "AllowCortana" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error preventing Cortana data collection:', err);
+  });
+}
+
+// Privacy Tweaks 63 - Disable advertising ID and targeted ads
+function disableAdvertisingId() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo" /v "Enabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling advertising ID:', err);
+  });
+}
 
 // Apply all final optimizations and settings
 function applyFinalOptimizations() {
