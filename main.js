@@ -19,12 +19,106 @@ function createWindow() {
   win.loadFile(path.join(__dirname, 'index.html'));
 }
 
-// Handle software installation prompts (Install games and software)
+// Enhanced software installation function
 function installSoftware(softwareName) {
-  console.log(`Installing ${softwareName}...`);
+  console.log(`Starting installation of ${softwareName}...`);
+  logAction(`Installing ${softwareName}`);
+  
+  // Show installation started message
   dialog.showMessageBox({
-    message: `${softwareName} installer is starting...`,
+    type: 'info',
+    title: 'Installation Started',
+    message: `Starting installation of ${softwareName}...`,
+    buttons: ['OK']
   });
+
+  // Map of software to their download URLs and install commands
+  const softwareMap = {
+    'Malwarebytes': {
+      url: 'https://downloads.malwarebytes.com/file/mb4_offline',
+      installer: 'mb4-setup-consumer.exe /quiet',
+      filename: 'mb4-setup-consumer.exe'
+    },
+    'ADWCleaner': {
+      url: 'https://downloads.malwarebytes.com/file/adwcleaner',
+      installer: 'adwcleaner.exe /silent',
+      filename: 'adwcleaner.exe'
+    },
+    'Steam': {
+      url: 'https://cdn.cloudflare.steamstatic.com/client/installer/SteamSetup.exe',
+      installer: 'SteamSetup.exe /silent',
+      filename: 'SteamSetup.exe'
+    },
+    'Epic Games': {
+      url: 'https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/installer/download/EpicGamesLauncherInstaller.msi',
+      installer: 'msiexec /i EpicGamesLauncherInstaller.msi /quiet /qn /norestart',
+      filename: 'EpicGamesLauncherInstaller.msi'
+    },
+    // Add more software entries here...
+  };
+
+  const software = softwareMap[softwareName];
+  if (!software) {
+    dialog.showMessageBox({
+      type: 'error',
+      title: 'Error',
+      message: `Installation details not found for ${softwareName}`,
+      buttons: ['OK']
+    });
+    return;
+  }
+
+  const downloadPath = path.join(os.tmpdir(), software.filename);
+  
+  // Download the file
+  fetch(software.url)
+    .then(response => {
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return response.buffer();
+    })
+    .then(buffer => {
+      fs.writeFileSync(downloadPath, buffer);
+      console.log(`Downloaded ${softwareName} to ${downloadPath}`);
+      
+      // Execute the installer
+      exec(`${downloadPath} ${software.installer}`, (error, stdout, stderr) => {
+        if (error) {
+          console.error(`Error installing ${softwareName}:`, error);
+          dialog.showMessageBox({
+            type: 'error',
+            title: 'Installation Failed',
+            message: `Failed to install ${softwareName}: ${error.message}`,
+            buttons: ['OK']
+          });
+          return;
+        }
+        
+        console.log(`${softwareName} installed successfully`);
+        dialog.showMessageBox({
+          type: 'info',
+          title: 'Installation Complete',
+          message: `${softwareName} has been installed successfully!`,
+          buttons: ['OK']
+        });
+        
+        // Clean up the downloaded file
+        try {
+          fs.unlinkSync(downloadPath);
+          console.log(`Cleaned up ${downloadPath}`);
+        } catch (cleanupError) {
+          console.error(`Error cleaning up ${downloadPath}:`, cleanupError);
+        }
+      });
+    })
+    .catch(error => {
+      console.error(`Error downloading ${softwareName}:`, error);
+      dialog.showMessageBox({
+        type: 'error',
+        title: 'Download Failed',
+        message: `Failed to download ${softwareName}: ${error.message}`,
+        buttons: ['OK']
+      });
+    });
 }
 
 // Handle system logs and display
@@ -46,7 +140,10 @@ async function checkSystemInfo() {
     ram: ram.total,
   };
 }
-
+// Set up IPC communication for software installation
+ipcMain.on('install-software', (event, softwareName) => {
+  installSoftware(softwareName);
+});
 app.whenReady().then(() => {
   createWindow();
   logAction('App started');
