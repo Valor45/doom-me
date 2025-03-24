@@ -37,18 +37,22 @@
   <div id="loginSection" class="centered-container text-center">
     <h2 class="mb-4">Windows Tweaker - Login</h2>
     <div class="mb-2">
-      <input type="text" id="loginUsername" class="form-control w-25 mx-auto" placeholder="Username" title="3-20 chars, no 'admin'"/>
+      <input type="text" id="loginUsername" class="form-control w-25 mx-auto" placeholder="Username" data-bs-toggle="tooltip" data-bs-placement="bottom" title="3-20 chars, no 'admin' substring"/>
     </div>
     <div class="mb-2">
       <div class="input-group w-25 mx-auto">
-        <input type="password" id="loginPassword" class="form-control" placeholder="Password" title="At least 8 characters (with upper, lower, digit, symbol)"/>
-        <button class="btn btn-outline-secondary" type="button" onclick="toggleShowPassword('loginPassword')">Show</button>
+        <input type="password" id="loginPassword" class="form-control" placeholder="Password" data-bs-toggle="tooltip" data-bs-placement="bottom" title="At least 8 chars, must have uppercase, lowercase, digit, symbol"/>
+        <button class="btn btn-outline-secondary" type="button" id="showPassBtn" onclick="toggleShowPassword('loginPassword')">Show</button>
       </div>
     </div>
     <div class="mb-2">
       <input type="text" id="loginKey" class="form-control w-25 mx-auto" placeholder="License Key"/>
     </div>
-    <button class="btn btn-primary mb-3" id="loginBtn">Login</button>
+    <div class="mb-3 form-check w-25 mx-auto text-start">
+      <input type="checkbox" class="form-check-input" id="saveLoginCheck"/>
+      <label class="form-check-label" for="saveLoginCheck">Remember me</label>
+    </div>
+    <button class="btn btn-primary mb-3" onclick="attemptLogin()">Login</button>
   </div>
 
   <!-- MAIN APP UI (hidden until login) -->
@@ -80,74 +84,66 @@
         <button id="backupBtn">Create Restore Point</button>
         <button id="benchmarkBtn">Run Benchmark</button>
       </div>
-<!-- FPS Tweaks Section -->
-<div id="section-fps" class="section" style="display:none;">
-  <h2>FPS Boost Tweaks</h2>
-  <div class="toggle-item">
-    <label class="switch"><input type="checkbox" id="toggle_ultimate_performance"><span class="slider"></span></label>
-    <span class="toggle-label">Enable Ultimate Performance Plan</span>
+      <!-- FPS Tweaks Section -->
+      <div id="section-fps" class="section" style="display:none;">
+        <h2>FPS Boost Tweaks</h2>
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_ultimate_performance"><span class="slider"></span></label>
+          <span class="toggle-label">Enable Ultimate Performance Plan</span>
+        </div>
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_disable_hpet"><span class="slider"></span></label>
+          <span class="toggle-label">Disable HPET & Dynamic Tick</span>
+        </div>
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_game_bar"><span class="slider"></span></label>
+          <span class="toggle-label">Disable Xbox Game Bar & DVR</span>
+        </div>
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_optimize_scheduler"><span class="slider"></span></label>
+          <span class="toggle-label">Optimize Network & Scheduler (Low Latency)</span>
+        </div>
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_input_delay"><span class="slider"></span></label>
+          <span class="toggle-label">Reduce Input Lag (Advanced)</span>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="toggle-item">
-    <label class="switch"><input type="checkbox" id="toggle_disable_hpet"><span class="slider"></span></label>
-    <span class="toggle-label">Disable HPET & Dynamic Tick</span>
-  </div>
-  <div class="toggle-item">
-    <label class="switch"><input type="checkbox" id="toggle_game_bar"><span class="slider"></span></label>
-    <span class="toggle-label">Disable Xbox Game Bar & DVR</span>
-  </div>
-  <div class="toggle-item">
-    <label class="switch"><input type="checkbox" id="toggle_optimize_scheduler"><span class="slider"></span></label>
-    <span class="toggle-label">Optimize Network & Scheduler (Low Latency)</span>
-  </div>
-  <div class="toggle-item">
-    <label class="switch"><input type="checkbox" id="toggle_input_delay"><span class="slider"></span></label>
-    <span class="toggle-label">Reduce Input Lag (Advanced)</span>
-  </div>
-  <div class="toggle-item">
-    <label class="switch"><input type="checkbox" id="toggle_disable_sysmain"><span class="slider"></span></label>
-    <span class="toggle-label">Disable SysMain Service</span>
-  </div>
-  <div class="toggle-item">
-    <label class="switch"><input type="checkbox" id="toggle_adjust_cpu_priority"><span class="slider"></span></label>
-    <span class="toggle-label">Adjust CPU Priority</span>
-  </div>
-  <div class="toggle-item">
-    <label class="switch"><input type="checkbox" id="toggle_disable_game_mode"><span class="slider"></span></label>
-    <span class="toggle-label">Disable Windows Game Mode</span>
-  </div>
-  <div class="toggle-item">
-    <label class="switch"><input type="checkbox" id="toggle_disable_hdaudio"><span class="slider"></span></label>
-    <span class="toggle-label">Disable High Definition Audio Device</span>
-  </div>
-  <div class="toggle-item">
-    <label class="switch"><input type="checkbox" id="toggle_disable_audio_enhancements"><span class="slider"></span></label>
-    <span class="toggle-label">Disable Audio Enhancements</span>
-  </div>
-  <div class="toggle-item">
-    <label class="switch"><input type="checkbox" id="toggle_disable_search_indexing"><span class="slider"></span></label>
-    <span class="toggle-label">Disable Windows Search Indexing</span>
-  </div>
-  <div class="toggle-item">
-    <label class="switch"><input type="checkbox" id="toggle_adjust_processor_scheduling"><span class="slider"></span></label>
-    <span class="toggle-label">Adjust Processor Scheduling for Best Performance</span>
-  </div>
-  <div class="toggle-item">
-    <label class="switch"><input type="checkbox" id="toggle_disable_defender_rt"><span class="slider"></span></label>
-    <span class="toggle-label">Disable Windows Defender Real-Time Protection</span>
-  </div>
-  <div class="toggle-item">
-    <label class="switch"><input type="checkbox" id="toggle_set_cpu_priority_high"><span class="slider"></span></label>
-    <span class="toggle-label">Set CPU Priority Class to High</span>
-  </div>
-  <div class="toggle-item">
-    <label class="switch"><input type="checkbox" id="toggle_disable_low_priority_io"><span class="slider"></span></label>
-    <span class="toggle-label">Disable Low Priority I/O Tasks</span>
-  </div>
-  <div class="toggle-item">
-    <label class="switch"><input type="checkbox" id="toggle_set_cpu_affinity"><span class="slider"></span></label>
-    <span class="toggle-label">Set CPU Affinity for Gaming</span>
-  </div>
-</div>
+
+<script>
+  // Show password functionality
+  function toggleShowPassword(inputId) {
+    const input = document.getElementById(inputId);
+    if (input.type === "password") {
+      input.type = "text";
+    } else {
+      input.type = "password";
+    }
+  }
+
+  // Attempt login and validate credentials
+  function attemptLogin() {
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+    const keyVal = document.getElementById('loginKey').value.trim();
+    const remember = document.getElementById('saveLoginCheck').checked;
+
+    // Placeholder for actual login validation
+    if (!username || !password || !keyVal) {
+      alert("Please fill in all fields!");
+      return;
+    }
+    alert("Login successful!");
+
+    // Hide login, show main UI
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('mainUI').style.display = 'block';
+  }
+</script>
+</body>
+</html>
+
 
 <!-- Visual Tweaks Section -->
 <div id="section-visual" class="section" style="display:none;">
