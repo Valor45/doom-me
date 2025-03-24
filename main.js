@@ -948,6 +948,128 @@ function disablePCIePowerManagement() {
     if (err) console.error('Error disabling PCIe Link State Power Management:', err);
   });
 }
+// FPS Tweaks 51 - Enable High Performance Power Plan
+function enableHighPerformancePowerPlan() {
+  exec('powercfg -setactive SCHEME_HIGH', (err, stdout, stderr) => {
+    if (err) console.error('Error enabling High Performance Power Plan:', err);
+  });
+}
+
+// FPS Tweaks 52 - Disable Windows Search Indexing
+function disableSearchIndexing() {
+  exec('sc stop "WSearch"', (err, stdout, stderr) => {
+    if (err) console.error('Error stopping Windows Search service:', err);
+  });
+  exec('sc config "WSearch" start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Windows Search service:', err);
+  });
+}
+
+// FPS Tweaks 53 - Adjust Processor Scheduling for Best Performance of Programs
+function adjustProcessorScheduling() {
+  exec('reg add "HKCU\\Control Panel\\Desktop" /v "ProcessorScheduling" /t REG_DWORD /d 2 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error adjusting processor scheduling:', err);
+  });
+}
+
+// FPS Tweaks 54 - Disable Windows Defender Real-Time Protection
+function disableDefenderRealTimeProtection() {
+  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender" /v "DisableRealtimeMonitoring" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Windows Defender Real-Time Protection:', err);
+  });
+}
+
+// FPS Tweaks 55 - Set CPU Priority Class to High
+function setCpuPriorityHigh() {
+  exec('bcdedit /set {current} priority 8', (err, stdout, stderr) => {
+    if (err) console.error('Error setting CPU priority to high:', err);
+  });
+}
+// Visual Tweaks 11 - Enable Transparency Effects
+function enableTransparencyEffects() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v "EnableTransparency" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error enabling transparency effects:', err);
+  });
+}
+
+// Visual Tweaks 12 - Show File Extensions for Known File Types
+function showFileExtensions() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "HideFileExt" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error showing file extensions:', err);
+  });
+}
+
+// Visual Tweaks 13 - Disable Aero Snap Feature
+function disableAeroSnap() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisableAeroSnap" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Aero Snap:', err);
+  });
+}
+
+// Visual Tweaks 14 - Set Taskbar Transparency
+function setTaskbarTransparency() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "TaskbarTransparency" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error setting taskbar transparency:', err);
+  });
+}
+
+// Visual Tweaks 15 - Change Window Border Width
+function changeWindowBorderWidth() {
+  exec('reg add "HKCU\\Control Panel\\Desktop" /v "BorderWidth" /t REG_SZ /d "-15" /f', (err, stdout, stderr) => {
+    if (err) console.error('Error changing window border width:', err);
+  });
+}
+// Privacy Tweaks 45 - Disable Windows Error Reporting
+function disableErrorReporting() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\Windows Error Reporting" /v "DontShowUI" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling error reporting:', err);
+  });
+}
+
+// Privacy Tweaks 46 - Prevent Microsoft from Sending Error Reports
+function preventErrorReports() {
+  exec('reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "DontShowErrorReporting" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error preventing error reports:', err);
+  });
+}
+
+// Privacy Tweaks 47 - Disable Windows Defender
+function disableWindowsDefender() {
+  exec('sc stop "WinDefend"', (err, stdout, stderr) => {
+    if (err) console.error('Error stopping Windows Defender service:', err);
+  });
+  exec('sc config "WinDefend" start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Windows Defender service:', err);
+  });
+}
+
+// Privacy Tweaks 48 - Disable Windows Store Auto-Updates
+function disableStoreAutoUpdates() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Appx" /v "PackageInstallAndUpdateBehavior" /t REG_DWORD /d 2 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Windows Store auto-updates:', err);
+  });
+}
+
+// Privacy Tweaks 49 - Disable Windows Insider Program Updates
+function disableInsiderProgramUpdates() {
+  exec('reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "AllowInsider" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Windows Insider Program updates:', err);
+  });
+}
+// Network Tweaks 45 - Disable Windows Background Intelligent Transfer Service (BITS)
+function disableBITS() {
+  exec('sc stop "BITS"', (err, stdout, stderr) => {
+    if (err) console.error('Error stopping BITS service:', err);
+  });
+  exec('sc config "BITS" start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling BITS service:', err);
+  });
+}
+
+// Network Tweaks 46 - Set DNS to Google DNS (8.8.8.8 and 8.8.4.4)
+function setGoogleDNS
+::contentReference[oaicite:0]{index=0}
+ 
 
 // Apply all final optimizations and settings
 function applyFinalOptimizations() {
