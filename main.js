@@ -496,6 +496,258 @@ function cleanSystemTempFiles() {
   });
 }
 
+
+// Boosted Plan Tweaks (Advanced Tab)
+function applyBoostedPlanTweaks() {
+  // Enable Windows Script Host
+  exec('reg add "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows Script Host\\Settings" /v "Enabled" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+    if (err) console.error('Error enabling Windows Script Host:', err);
+  });
+
+  // Disable SysMain and Superfetch
+  exec('net stop wuauserv', (err, stdout, stderr) => {
+    if (err) console.error('Error stopping wuauserv:', err);
+  });
+  exec('sc config "wuauserv" start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling wuauserv:', err);
+  });
+  exec('net stop SysMain', (err, stdout, stderr) => {
+    if (err) console.error('Error stopping SysMain:', err);
+  });
+  exec('sc config "Sysmain" start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling SysMain:', err);
+  });
+
+  // Apply Ultimate Performance Power Plan
+  exec('powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 11111111-1111-1111-1111-111111111111', (err, stdout, stderr) => {
+    if (err) console.error('Error applying boosted power plan:', err);
+  });
+
+  // Set Active Power Plan to Ultimate Performance
+  exec('powercfg -setactive 11111111-1111-1111-1111-111111111111', (err, stdout, stderr) => {
+    if (err) console.error('Error setting active power plan:', err);
+  });
+}
+
+// Apply Power Configuration Tweaks (for maximizing performance)
+function applyCpuPowerOptimizations() {
+  // Adjust CPU power settings
+  exec('bcdedit /set IncreaseUserVa 4000', (err, stdout, stderr) => {
+    if (err) console.error('Error adjusting CPU power:', err);
+  });
+  exec('powercfg -setacvalueindex 11111111-1111-1111-1111-111111111111 238c9fa8-0aad-41ed-83f4-97be242c8f20 29f6c1db-86da-48c5-9fdb-f2b67b1f44da 0', (err, stdout, stderr) => {
+    if (err) console.error('Error applying CPU power optimizations:', err);
+  });
+}
+// Network Tweaks (Advanced Tab)
+function applyAdvancedNetworkTweaks() {
+  exec('netsh int ip reset', (err, stdout, stderr) => {
+    if (err) console.error('Error resetting network settings:', err);
+  });
+
+  exec('netsh int tcp reset', (err, stdout, stderr) => {
+    if (err) console.error('Error resetting TCP settings:', err);
+  });
+
+  exec('netsh winsock reset', (err, stdout, stderr) => {
+    if (err) console.error('Error resetting Winsock:', err);
+  });
+
+  // Enable/Disable IPv6 settings for improved network performance
+  exec('netsh interface ipv6 set teredo disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Teredo:', err);
+  });
+  exec('netsh int tcp set global autotuninglevel=normal', (err, stdout, stderr) => {
+    if (err) console.error('Error setting TCP autotuning:', err);
+  });
+  exec('netsh int tcp set global ecncapability=enabled', (err, stdout, stderr) => {
+    if (err) console.error('Error enabling ECN capability:', err);
+  });
+}
+// Disable Telemetry (Advanced Tab)
+function disableTelemetryTweaks() {
+  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling telemetry:', err);
+  });
+
+  exec('sc config dmwappushservice start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling dmwappushservice:', err);
+  });
+
+  exec('sc config diagnosticshub.standardcollector.service start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling diagnosticshub:', err);
+  });
+
+  exec('sc config DiagTrack start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling DiagTrack:', err);
+  });
+}
+// Security Tweaks (Advanced Tab)
+function applySecurityOptimizations() {
+  // Disable Windows Defender and related services
+  exec('sc stop "WinDefend"', (err, stdout, stderr) => {
+    if (err) console.error('Error stopping Windows Defender:', err);
+  });
+  exec('sc config "WinDefend" start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Windows Defender service:', err);
+  });
+
+  // Disable unnecessary services like SysMain, Superfetch
+  exec('sc config "SysMain" start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling SysMain:', err);
+  });
+
+  // Disable SMB1 for security purposes
+  exec('powershell -Command "Disable-WindowsOptionalFeature -Online -FeatureName \'SMB1Protocol\' -NoRestart"', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling SMB1:', err);
+  });
+}
+
+
+
+// Boosted Plan Tweaks (Advanced Tab)
+function applyBoostedPlanTweaks() {
+  // Enable Windows Script Host
+  exec('reg add "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows Script Host\\Settings" /v "Enabled" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+    if (err) console.error('Error enabling Windows Script Host:', err);
+  });
+
+  // Disable SysMain and Superfetch
+  exec('net stop wuauserv', (err, stdout, stderr) => {
+    if (err) console.error('Error stopping wuauserv:', err);
+  });
+  exec('sc config "wuauserv" start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling wuauserv:', err);
+  });
+  exec('net stop SysMain', (err, stdout, stderr) => {
+    if (err) console.error('Error stopping SysMain:', err);
+  });
+  exec('sc config "Sysmain" start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling SysMain:', err);
+  });
+
+  // Apply Ultimate Performance Power Plan
+  exec('powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 11111111-1111-1111-1111-111111111111', (err, stdout, stderr) => {
+    if (err) console.error('Error applying boosted power plan:', err);
+  });
+
+  // Set Active Power Plan to Ultimate Performance
+  exec('powercfg -setactive 11111111-1111-1111-1111-111111111111', (err, stdout, stderr) => {
+    if (err) console.error('Error setting active power plan:', err);
+  });
+}
+
+// Apply Power Configuration Tweaks (for maximizing performance)
+function applyCpuPowerOptimizations() {
+  // Adjust CPU power settings
+  exec('bcdedit /set IncreaseUserVa 4000', (err, stdout, stderr) => {
+    if (err) console.error('Error adjusting CPU power:', err);
+  });
+  exec('powercfg -setacvalueindex 11111111-1111-1111-1111-111111111111 238c9fa8-0aad-41ed-83f4-97be242c8f20 29f6c1db-86da-48c5-9fdb-f2b67b1f44da 0', (err, stdout, stderr) => {
+    if (err) console.error('Error applying CPU power optimizations:', err);
+  });
+}
+
+// Network Tweaks (Advanced Tab)
+function applyAdvancedNetworkTweaks() {
+  exec('netsh int ip reset', (err, stdout, stderr) => {
+    if (err) console.error('Error resetting network settings:', err);
+  });
+
+  exec('netsh int tcp reset', (err, stdout, stderr) => {
+    if (err) console.error('Error resetting TCP settings:', err);
+  });
+
+  exec('netsh winsock reset', (err, stdout, stderr) => {
+    if (err) console.error('Error resetting Winsock:', err);
+  });
+
+  // Enable/Disable IPv6 settings for improved network performance
+  exec('netsh interface ipv6 set teredo disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Teredo:', err);
+  });
+  exec('netsh int tcp set global autotuninglevel=normal', (err, stdout, stderr) => {
+    if (err) console.error('Error setting TCP autotuning:', err);
+  });
+  exec('netsh int tcp set global ecncapability=enabled', (err, stdout, stderr) => {
+    if (err) console.error('Error enabling ECN capability:', err);
+  });
+}
+// Disable Telemetry (Advanced Tab)
+function disableTelemetryTweaks() {
+  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling telemetry:', err);
+  });
+
+  exec('sc config dmwappushservice start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling dmwappushservice:', err);
+  });
+
+  exec('sc config diagnosticshub.standardcollector.service start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling diagnosticshub:', err);
+  });
+
+  exec('sc config DiagTrack start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling DiagTrack:', err);
+  });
+}
+// Security Tweaks (Advanced Tab)
+function applySecurityOptimizations() {
+  // Disable Windows Defender and related services
+  exec('sc stop "WinDefend"', (err, stdout, stderr) => {
+    if (err) console.error('Error stopping Windows Defender:', err);
+  });
+  exec('sc config "WinDefend" start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Windows Defender service:', err);
+  });
+
+  // Disable unnecessary services like SysMain, Superfetch
+  exec('sc config "SysMain" start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling SysMain:', err);
+  });
+
+  // Disable SMB1 for security purposes
+  exec('powershell -Command "Disable-WindowsOptionalFeature -Online -FeatureName \'SMB1Protocol\' -NoRestart"', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling SMB1:', err);
+  });
+}
+// Visual Tweaks (Advanced Tab)
+function applyVisualTweaks() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "ShowStatusBar" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error enabling status bar:', err);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisableShaking" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Aero Shake:', err);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "TaskbarGlomLevel" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error setting Taskbar Glom Level:', err);
+  });
+
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "MenuShowDelay" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error removing Menu Show Delay:', err);
+  });
+}
+// Gaming Performance Optimizations (Advanced Tab)
+function applyGamingTweaks() {
+  // Disable Xbox Game Bar and related services
+  exec('sc config xbgm start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Xbox Game Bar:', err);
+  });
+  exec('sc config XblAuthManager start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling XblAuthManager:', err);
+  });
+  exec('sc config XblGameSave start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling XblGameSave:', err);
+  });
+
+  // Disable Game DVR and Game Mode
+  exec('reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Game DVR:', err);
+  });
+}
+
 // Apply all final optimizations and settings
 function applyFinalOptimizations() {
   disableUnwantedServices();
