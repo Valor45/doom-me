@@ -1,9 +1,10 @@
-const { app, BrowserWindow, dialog } = require('electron'); 
+const { app, BrowserWindow, dialog, ipcMain } = require('electron');  // Added ipcMain
 const path = require('path');
 const fs = require('fs');
 const { exec } = require('child_process');
 const fetch = require('node-fetch');
 const si = require('systeminformation');
+const os = require('os');  // Added os module which was needed
 
 // Function to create the main window
 function createWindow() {
@@ -54,7 +55,21 @@ function installSoftware(softwareName) {
       installer: 'msiexec /i EpicGamesLauncherInstaller.msi /quiet /qn /norestart',
       filename: 'EpicGamesLauncherInstaller.msi'
     },
-    // Add more software entries here...
+    'Battle.net': {
+      url: 'https://www.battle.net/download/getInstallerForGame?os=win&gameProgram=BATTLENET_APP',
+      installer: 'Battle.net-Setup.exe --lang=enUS --installpath="C:\\Program Files (x86)\\Battle.net"',
+      filename: 'Battle.net-Setup.exe'
+    },
+    'Ubisoft Connect': {
+      url: 'https://ubi.li/4vxt9',
+      installer: 'UbisoftConnectInstaller.exe /S',
+      filename: 'UbisoftConnectInstaller.exe'
+    },
+    'Discord': {
+      url: 'https://discord.com/api/download?platform=win&format=exe',
+      installer: 'DiscordSetup.exe /S',
+      filename: 'DiscordSetup.exe'
+    }
   };
 
   const software = softwareMap[softwareName];
@@ -140,10 +155,12 @@ async function checkSystemInfo() {
     ram: ram.total,
   };
 }
+
 // Set up IPC communication for software installation
 ipcMain.on('install-software', (event, softwareName) => {
   installSoftware(softwareName);
 });
+
 app.whenReady().then(() => {
   createWindow();
   logAction('App started');
@@ -156,7 +173,6 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
-
 // FPS/Performance Tweaks
 function applyFpsTweaks() {
   // Example tweak: Disable Aero Glass
