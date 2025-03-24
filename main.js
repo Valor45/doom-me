@@ -2807,3 +2807,93 @@ function enableGameMode() {
 
 // Enable Game Mode
 document.getElementById('enableGameModeBtn').addEventListener('click', enableGameMode);
+function disableWindowsTips() {
+  // Disabling Windows Tips to reduce background processes
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager" /v "SubscribedContentEnabled" /t REG_DWORD /d "0" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Disable Windows Tips
+document.getElementById('disableWindowsTipsBtn').addEventListener('click', disableWindowsTips);
+function reduceLockScreenTimeout() {
+  // Reducing lock screen timeout for quicker access
+  exec('reg add "HKCU\\Control Panel\\Desktop" /v "ScreenSaveTimeOut" /t REG_SZ /d "300" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Reduce Lock Screen Timeout
+document.getElementById('reduceLockScreenTimeoutBtn').addEventListener('click', reduceLockScreenTimeout);
+function disableWindowsErrorReporting() {
+  // Disabling Windows Error Reporting to prevent unnecessary data collection
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\Windows Error Reporting" /v "Disabled" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Disable Windows Error Reporting
+document.getElementById('disableErrorReportingBtn').addEventListener('click', disableWindowsErrorReporting);
+function disableRemoteAssistance() {
+  // Disabling Remote Assistance to enhance security and performance
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "DisableRemoteAssistance" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Disable Remote Assistance
+document.getElementById('disableRemoteAssistanceBtn').addEventListener('click', disableRemoteAssistance);
+function disablePrintSpooler() {
+  // Disabling Print Spooler service if printing is not required
+  exec('sc stop "Spooler"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc config "Spooler" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Disable Print Spooler
+document.getElementById('disablePrintSpoolerBtn').addEventListener('click', disablePrintSpooler);
+function reduceLockScreenTimeout() {
+  // Reducing lock screen timeout for quicker access
+  exec('reg add "HKCU\\Control Panel\\Desktop" /v "ScreenSaveTimeOut" /t REG_SZ /d "300" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Reduce Lock Screen Timeout
+document.getElementById('reduceLockScreenTimeoutBtn').addEventListener('click', reduceLockScreenTimeout);
+function disableWindowsErrorReporting() {
+  // Disabling Windows Error Reporting to prevent unnecessary data collection
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\Windows Error Reporting" /v "Disabled" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Disable Windows Error Reporting
+document.getElementById('disableErrorReportingBtn').addEventListener('click', disableWindowsErrorReporting);
+function disablePrintSpooler() {
+  // Disabling Print Spooler service if printing is not required
+  exec('sc stop "Spooler"', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+
+  exec('sc config "Spooler" start= disabled', (err, stdout, stderr) => {
+      if (err) console.error(err);
+      console.log(stdout);
+  });
+}
+
+// Disable Print Spooler
+document.getElementById('disablePrintSpoolerBtn').addEventListener('click', disablePrintSpooler);
