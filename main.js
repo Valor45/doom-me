@@ -1056,20 +1056,77 @@ function disableInsiderProgramUpdates() {
     if (err) console.error('Error disabling Windows Insider Program updates:', err);
   });
 }
-// Network Tweaks 45 - Disable Windows Background Intelligent Transfer Service (BITS)
-function disableBITS() {
-  exec('sc stop "BITS"', (err, stdout, stderr) => {
-    if (err) console.error('Error stopping BITS service:', err);
-  });
-  exec('sc config "BITS" start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling BITS service:', err);
+// FPS Tweaks 56 - Enable High Performance Power Plan
+function enableHighPerformancePowerPlan() {
+  exec('powercfg -setactive SCHEME_HIGH', (err, stdout, stderr) => {
+    if (err) console.error('Error enabling High Performance Power Plan:', err);
   });
 }
 
-// Network Tweaks 46 - Set DNS to Google DNS (8.8.8.8 and 8.8.4.4)
-function setGoogleDNS
-::contentReference[oaicite:0]{index=0}
- 
+// FPS Tweaks 57 - Disable Windows Search Indexing
+function disableSearchIndexing() {
+  exec('sc stop "WSearch"', (err, stdout, stderr) => {
+    if (err) console.error('Error stopping Windows Search service:', err);
+  });
+  exec('sc config "WSearch" start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Windows Search service:', err);
+  });
+}
+
+// FPS Tweaks 58 - Adjust Processor Scheduling for Best Performance of Programs
+function adjustProcessorScheduling() {
+  exec('reg add "HKCU\\Control Panel\\Desktop" /v "ProcessorScheduling" /t REG_DWORD /d 2 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error adjusting processor scheduling:', err);
+  });
+}
+
+// FPS Tweaks 59 - Disable Windows Defender Real-Time Protection
+function disableDefenderRealTimeProtection() {
+  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender" /v "DisableRealtimeMonitoring" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Windows Defender Real-Time Protection:', err);
+  });
+}
+
+// FPS Tweaks 60 - Set CPU Priority Class to High
+function setCpuPriorityHigh() {
+  exec('bcdedit /set {current} priority 8', (err, stdout, stderr) => {
+    if (err) console.error('Error setting CPU priority to high:', err);
+  });
+}
+// Visual Tweaks 14 - Enable Transparency Effects
+function enableTransparencyEffects() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v "EnableTransparency" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error enabling transparency effects:', err);
+  });
+}
+
+// Visual Tweaks 15 - Show File Extensions for Known File Types
+function showFileExtensions() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "HideFileExt" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error showing file extensions:', err);
+  });
+}
+
+// Visual Tweaks 16 - Disable Aero Snap Feature
+function disableAeroSnap() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisableAeroSnap" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Aero Snap:', err);
+  });
+}
+
+// Visual Tweaks 17 - Enable Dark Mode for Windows Apps
+function enableDarkMode() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v "AppsUseLightTheme" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error enabling dark mode for apps:', err);
+  });
+}
+
+// Visual Tweaks 18 - Show Seconds in Taskbar Clock
+function showSecondsInTaskbarClock() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "ShowSecondsInSystemClock" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error showing seconds in taskbar clock:', err);
+  });
+}
 
 // Apply all final optimizations and settings
 function applyFinalOptimizations() {
