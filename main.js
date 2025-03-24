@@ -748,6 +748,75 @@ function applyGamingTweaks() {
   });
 }
 
+// FPS Tweaks 1 - Disable High Definition Audio
+function disableHighDefinitionAudio() {
+  exec('sc stop "hdaudio" && sc config "hdaudio" start= disabled', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling High Definition Audio:', err);
+  });
+}
+
+// FPS Tweaks 2 - Set CPU to high performance
+function setCpuToHighPerformance() {
+  exec('bcdedit /set disabledynamictick yes', (err, stdout, stderr) => {
+    if (err) console.error('Error setting CPU to high performance:', err);
+  });
+}
+
+// FPS Tweaks 3 - Disable audio enhancements
+function disableAudioEnhancements() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Multimedia\\SystemProfile" /v "AudioEnhancementMode" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling audio enhancements:', err);
+  });
+}
+
+// FPS Tweaks 4 - Disable Windows 10 sleep mode (for performance)
+function disableSleepMode() {
+  exec('powercfg -change standby-timeout-ac 0', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling sleep mode:', err);
+  });
+}
+
+// FPS Tweaks 5 - Set power plan to maximum performance
+function setPowerPlanMaxPerformance() {
+  exec('powercfg -setactive SCHEME_MIN', (err, stdout, stderr) => {
+    if (err) console.error('Error setting power plan to maximum performance:', err);
+  });
+}
+// Visual Tweaks 1 - Enable transparency effects for a more dynamic interface
+function enableTransparency() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v "EnableTransparency" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error enabling transparency:', err);
+  });
+}
+
+// Visual Tweaks 2 - Disable thumbnail previews for file explorer
+function disableThumbnailPreviews() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "IconsOnly" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling thumbnail previews:', err);
+  });
+}
+
+// Visual Tweaks 3 - Show full file extensions in File Explorer
+function showFileExtensions() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "HideFileExt" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error showing file extensions:', err);
+  });
+}
+
+// Visual Tweaks 4 - Disable taskbar grouping (keep taskbar icons separate)
+function disableTaskbarGrouping() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "TaskbarGlomLevel" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling taskbar grouping:', err);
+  });
+}
+
+// Visual Tweaks 5 - Change taskbar icon size
+function changeTaskbarIconSize() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "TaskbarSmallIcons" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error changing taskbar icon size:', err);
+  });
+}
+
 // Apply all final optimizations and settings
 function applyFinalOptimizations() {
   disableUnwantedServices();
