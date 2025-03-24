@@ -1127,6 +1127,111 @@ function showSecondsInTaskbarClock() {
     if (err) console.error('Error showing seconds in taskbar clock:', err);
   });
 }
+// FPS Tweaks 56 - Disable Low Priority I/O Tasks
+function disableLowPriorityIO() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "LowPriorityIO" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling low priority I/O tasks:', err);
+  });
+}
+
+// FPS Tweaks 57 - Set CPU affinity for optimized gaming
+function setCpuAffinity() {
+  exec('bcdedit /set {current} affinity 0x01', (err, stdout, stderr) => {
+    if (err) console.error('Error setting CPU affinity for gaming:', err);
+  });
+}
+
+// FPS Tweaks 58 - Disable prefetch for non-critical applications
+function disablePrefetchForNonCritical() {
+  exec('reg add "HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Memory Management\\PrefetchParameters" /v "EnablePrefetcher" /t REG_DWORD /d 2 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling prefetch for non-critical apps:', err);
+  });
+}
+
+// FPS Tweaks 59 - Disable Hibernation to save disk space and improve performance
+function disableHibernation() {
+  exec('powercfg -hibernate off', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling hibernation:', err);
+  });
+}
+
+// FPS Tweaks 60 - Adjust Virtual Memory/Pagefile settings for performance
+function adjustVirtualMemory() {
+  exec('wmic computersystem where name="%computername%" set AutomaticManagedPagefile=False', (err, stdout, stderr) => {
+    if (err) console.error('Error adjusting virtual memory settings:', err);
+  });
+  exec('wmic pagefileset where name="%SystemDrive%\\pagefile.sys" set InitialSize=2048,MaximumSize=8192', (err, stdout, stderr) => {
+    if (err) console.error('Error adjusting pagefile size:', err);
+  });
+}
+// Visual Tweaks 11 - Set taskbar to automatically hide
+function setAutoHideTaskbar() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "TaskbarAutoHide" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error setting taskbar to auto-hide:', err);
+  });
+}
+
+// Visual Tweaks 12 - Remove Cortana from Taskbar
+function removeCortanaFromTaskbar() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "ShowCortanaButton" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error removing Cortana from taskbar:', err);
+  });
+}
+
+// Visual Tweaks 13 - Change system font to Segoe UI (from default font)
+function changeSystemFont() {
+  exec('reg add "HKCU\\Control Panel\\Desktop" /v "FontSmoothing" /t REG_DWORD /d 2 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error changing system font:', err);
+  });
+}
+
+// Visual Tweaks 14 - Disable animations in File Explorer
+function disableFileExplorerAnimations() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "Animations" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling animations in File Explorer:', err);
+  });
+}
+
+// Visual Tweaks 15 - Enable Dark Mode for File Explorer
+function enableDarkModeExplorer() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v "AppsUseLightTheme" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error enabling dark mode in File Explorer:', err);
+  });
+}
+// Privacy Tweaks 45 - Disable Windows 10 Cortana data collection
+function disableCortanaDataCollection() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Search" /v "AllowCortana" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Cortana data collection:', err);
+  });
+}
+
+// Privacy Tweaks 46 - Disable Windows Update Delivery Optimization
+function disableWindowsUpdateOptimization() {
+  exec('reg add "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\DeliveryOptimization\\Config" /v "DODownloadMode" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Delivery Optimization:', err);
+  });
+}
+
+// Privacy Tweaks 47 - Disable User Account Control (UAC)
+function disableUAC() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "EnableLUA" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling UAC:', err);
+  });
+}
+
+// Privacy Tweaks 48 - Disable automatic sending of feedback to Microsoft
+function disableMicrosoftFeedback() {
+  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent" /v "FeedbackEnabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error disabling Microsoft Feedback:', err);
+  });
+}
+
+// Privacy Tweaks 49 - Turn off Location Services
+function turnOffLocationServices() {
+  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Geolocation" /v "Enabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
+    if (err) console.error('Error turning off location services:', err);
+  });
+}
 
 // Apply all final optimizations and settings
 function applyFinalOptimizations() {
