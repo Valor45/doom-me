@@ -1,1871 +1,1079 @@
-const { app, BrowserWindow, dialog, ipcMain } = require('electron');  // Added ipcMain
-const path = require('path');
-const fs = require('fs');
-const { exec } = require('child_process');
-const fetch = require('node-fetch');
-const si = require('systeminformation');
-const os = require('os');  // Added os module which was needed
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Ants Tweaks - Ultimate Edition</title>
 
-// Function to create the main window
-function createWindow() {
-  const win = new BrowserWindow({
-    width: 1400,
-    height: 900,
-    webPreferences: {
-      nodeIntegration: true, // For demonstration (security risk in production)
-      contextIsolation: false,
-    },
-  });
-
-  win.loadFile(path.join(__dirname, 'index.html'));
-}
-
-// Enhanced software installation function
-// Updated software installation function with all your requested apps
-// Updated software installation function with all your requested apps
-function installSoftware(softwareName) {
-  console.log(`Starting installation of ${softwareName}...`);
-  logAction(`Installing ${softwareName}`);
+  <!-- Bootstrap 5 for modern UI -->
+  <link 
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+  </script>
   
-  // Show installation started message
-  dialog.showMessageBox({
-    type: 'info',
-    title: 'Installation Started',
-    message: `Starting installation of ${softwareName}...`,
-    buttons: ['OK']
+  <!-- FontAwesome for sidebar icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+
+  <style>
+    body {
+      background-color: #1a1a1a;
+      color: #ffffff;
+      font-family: sans-serif;
+    }
+    /* Hide pages until we choose which to show */
+    #loginSection, #restoreSection, #mainApp { display: none; }
+    .centered-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .nav-link.active {
+      background-color: #222 !important;
+    }
+    
+    /* New sidebar styles */
+    .sidebar {
+      width: 250px;
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      background-color: #1e1e1e;
+      padding: 20px;
+      color: white;
+      overflow-y: auto;
+    }
+    .sidebar h1 {
+      color: #fff;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+    .sidebar li {
+      padding: 10px;
+      margin-bottom: 5px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .sidebar li:hover {
+      background-color: #333;
+    }
+    .sidebar li.active {
+      background-color: #444;
+    }
+    .sidebar i {
+      margin-right: 10px;
+      width: 20px;
+      text-align: center;
+    }
+    
+    /* Main content area */
+    .main-content {
+      margin-left: 250px;
+      padding: 20px;
+    }
+    
+    /* Toggle switches */
+    .toggle-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .toggle-label {
+      margin-left: 10px;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #2196F3;
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    
+    /* Admin output */
+    #adminOutput {
+      background: #2b2b2b;
+      color: #ccc;
+      width: 100%;
+    }
+    
+    /* Software list */
+    .soft-list {
+      list-style: none;
+      padding-left: 0;
+    }
+    .soft-list li {
+      margin: 4px 0;
+    }
+  </style>
+</head>
+
+<body>
+<div class="container-fluid">
+
+  <!-- 1) LOGIN SECTION -->
+  <div id="loginSection" class="centered-container text-center">
+    <h2 class="mb-4">Ants Tweaks - Login</h2>
+
+    <div class="mb-2">
+      <input 
+        type="text"
+        id="loginUsername"
+        class="form-control w-25 mx-auto"
+        placeholder="Username"
+        data-bs-toggle="tooltip"
+        data-bs-placement="bottom"
+        title="3-20 chars, no 'admin' substring"
+      />
+    </div>
+
+    <div class="mb-2">
+      <div class="input-group w-25 mx-auto">
+        <input 
+          type="password"
+          id="loginPassword"
+          class="form-control"
+          placeholder="Password"
+          data-bs-toggle="tooltip"
+          data-bs-placement="bottom"
+          title="At least 8 chars, must have uppercase, lowercase, digit, symbol"
+        />
+        <button class="btn btn-outline-secondary" id="showPassBtn" type="button" 
+                onclick="toggleShowPassword('loginPassword')">Show</button>
+      </div>
+    </div>
+
+    <div class="mb-2">
+      <input 
+        type="text"
+        id="loginKey"
+        class="form-control w-25 mx-auto"
+        placeholder="License Key"
+      />
+    </div>
+
+    <div class="mb-3 form-check w-25 mx-auto text-start">
+      <input type="checkbox" class="form-check-input" id="saveLoginCheck">
+      <label class="form-check-label" for="saveLoginCheck">Remember me</label>
+    </div>
+
+    <button class="btn btn-primary mb-3" onclick="attemptLogin()">Login</button>
+  </div>
+
+
+  <!-- 2) RESTORE PROMPT -->
+  <div id="restoreSection" class="centered-container text-center">
+    <h2>Create a Restore Point?</h2>
+    <p>We recommend a restore point before applying tweaks.</p>
+    <button class="btn btn-success me-2" onclick="createRestorePoint()">Yes</button>
+    <button class="btn btn-secondary" onclick="skipRestorePoint()">Skip</button>
+  </div>
+
+
+  <!-- 3) MAIN APP -->
+  <div id="mainApp">
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+      <h1 class="app-title">Ants Tweaks</h1>
+      <ul>
+        <li data-section="dashboard" class="active" onclick="showPage('dashboardPage')"><i class="fas fa-tachometer-alt"></i> Dashboard</li>
+        <li data-section="fps" onclick="showPage('fpsTweaks')"><i class="fas fa-gamepad"></i> FPS</li>
+        <li data-section="net" onclick="showPage('netTweaks')"><i class="fas fa-network-wired"></i> Network</li>
+        <li data-section="visual" onclick="showPage('visualTweaks')"><i class="fas fa-eye"></i> Visual</li>
+        <li data-section="privacy" onclick="showPage('privacyTweaks')"><i class="fas fa-shield-alt"></i> Privacy</li>
+        <li data-section="misc" onclick="showPage('miscTweaks')"><i class="fas fa-ellipsis-h"></i> Misc</li>
+        <li data-section="power" onclick="showPage('powerTweaks')"><i class="fas fa-bolt"></i> Power Plan</li>
+        <li data-section="benchmark" onclick="showPage('benchmarkPage')"><i class="fas fa-chart-line"></i> Benchmark</li>
+        <li data-section="software" onclick="showPage('softwarePage')"><i class="fas fa-download"></i> Software</li>
+        <li data-section="config" onclick="showPage('configPage')"><i class="fas fa-cog"></i> Config</li>
+        <li data-section="admin" id="adminNavItem" style="display:none;" onclick="showPage('adminPage')"><i class="fas fa-user-shield"></i> Admin</li>
+      </ul>
+    </div>
+    
+    <!-- Main Content Sections -->
+    <div class="main-content">
+      <!-- 3.1) DASHBOARD -->
+      <div id="dashboardPage">
+        <h2>System Overview</h2>
+        <div class="row">
+          <div class="col-md-4">
+            <p><strong>Processor:</strong> <span id="cpuName">...</span></p>
+            <p><strong>Graphics Card:</strong> <span id="gpuName">...</span></p>
+          </div>
+          <div class="col-md-4">
+            <p><strong>CPU Usage:</strong> <span id="cpuUsage">0%</span></p>
+            <p><strong>Memory Usage:</strong> <span id="memUsage">0%</span></p>
+          </div>
+          <div class="col-md-4">
+            <p><strong>OS:</strong> <span id="osInfo">...</span></p>
+          </div>
+        </div>
+        <button id="backupBtn" class="btn btn-primary me-2">Create Restore Point</button>
+        <button id="benchmarkBtn" class="btn btn-primary">Run Benchmark</button>
+      </div>
+
+      <!-- 3.2) FPS/Performance Tweaks -->
+      <div id="fpsTweaks" style="display:none;">
+        <h2>FPS / Performance Tweaks</h2>
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggleGameMode"><span class="slider"></span></label>
+          <span class="toggle-label">Disable Windows Game Mode</span>
+        </div>
+        <small>Stops Windows Game Mode for better stability (some say it helps FPS).</small>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggleGameDVR"><span class="slider"></span></label>
+          <span class="toggle-label">Disable GameDVR</span>
+        </div>
+        <small>Prevents background DVR from impacting performance.</small>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggleFastStartup"><span class="slider"></span></label>
+          <span class="toggle-label">Disable Fast Startup</span>
+        </div>
+        <small>May improve driver loading on boot, some say it helps stability.</small>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_disable_hpet"><span class="slider"></span></label>
+          <span class="toggle-label">Disable HPET & Dynamic Tick</span>
+        </div>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_optimize_scheduler"><span class="slider"></span></label>
+          <span class="toggle-label">Optimize Network & Scheduler (Low Latency)</span>
+        </div>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_input_delay"><span class="slider"></span></label>
+          <span class="toggle-label">Reduce Input Lag (Advanced)</span>
+        </div>
+        
+        <button class="btn btn-info mt-3" onclick="applyFpsTweaks()">Apply FPS Tweaks</button>
+      </div>
+
+      <!-- 3.3) Internet/Network Tweaks -->
+      <div id="netTweaks" style="display:none;">
+        <h2>Internet / Network Tweaks</h2>
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggleTCP"><span class="slider"></span></label>
+          <span class="toggle-label">TCP Optimizations</span>
+        </div>
+        <small>Adjusts registry for better throughput/latency.</small>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggleDNSFlush"><span class="slider"></span></label>
+          <span class="toggle-label">Flush DNS on Boot</span>
+        </div>
+        <small>Clears DNS cache to reduce stale entries.</small>
+        
+        <button class="btn btn-info mt-3" onclick="applyNetTweaks()">Apply Network Tweaks</button>
+      </div>
+
+      <!-- 3.4) Visual Tweaks -->
+      <div id="visualTweaks" style="display:none;">
+        <h2>Visual Tweaks</h2>
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggleAnimations"><span class="slider"></span></label>
+          <span class="toggle-label">Disable Animations</span>
+        </div>
+        <small>Remove unneeded Windows animations.</small>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggleTransparency"><span class="slider"></span></label>
+          <span class="toggle-label">Disable Transparency</span>
+        </div>
+        <small>Removes transparency effects in the UI.</small>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_disable_transparency"><span class="slider"></span></label>
+          <span class="toggle-label">Disable Transparency Effects</span>
+        </div>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_show_seconds_in_taskbar_clock"><span class="slider"></span></label>
+          <span class="toggle-label">Show Seconds in Taskbar Clock</span>
+        </div>
+        
+        <button class="btn btn-info mt-3" onclick="applyVisualTweaks()">Apply Visual Tweaks</button>
+      </div>
+
+      <!-- 3.5) Privacy Tweaks -->
+      <div id="privacyTweaks" style="display:none;">
+        <h2>Privacy Tweaks</h2>
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggleWinUpdate"><span class="slider"></span></label>
+          <span class="toggle-label">Disable Windows Update</span>
+        </div>
+        <small>Prevents updates from auto-installing.</small>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggleSearchIndex"><span class="slider"></span></label>
+          <span class="toggle-label">Disable Search Indexing</span>
+        </div>
+        <small>Stops indexing for improved performance or privacy.</small>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggleTelemetry"><span class="slider"></span></label>
+          <span class="toggle-label">Disable Telemetry</span>
+        </div>
+        <small>Limits data sent to MS.</small>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_no_telemetry"><span class="slider"></span></label>
+          <span class="toggle-label">Disable Telemetry / Data Collection</span>
+        </div>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_disable_edge_tracking"><span class="slider"></span></label>
+          <span class="toggle-label">Disable Edge Tracking</span>
+        </div>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_disable_app_tracking"><span class="slider"></span></label>
+          <span class="toggle-label">Disable App Tracking</span>
+        </div>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_disable_web_search"><span class="slider"></span></label>
+          <span class="toggle-label">Disable Web Search</span>
+        </div>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_disable_win_defender"><span class="slider"></span></label>
+          <span class="toggle-label">Disable Windows Defender</span>
+        </div>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_disable_update_telemetry"><span class="slider"></span></label>
+          <span class="toggle-label">Disable Update Telemetry</span>
+        </div>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_disable_wi_fi_sense"><span class="slider"></span></label>
+          <span class="toggle-label">Disable WiFi Sense</span>
+        </div>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_disable_win_error_reporting"><span class="slider"></span></label>
+          <span class="toggle-label">Disable Windows Error Reporting</span>
+        </div>
+        
+        <button class="btn btn-info mt-3" onclick="applyPrivacyTweaks()">Apply Privacy Tweaks</button>
+      </div>
+
+      <!-- 3.6) Misc Tweaks -->
+      <div id="miscTweaks" style="display:none;">
+        <h2>Misc Tweaks</h2>
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggleRemoteAssist"><span class="slider"></span></label>
+          <span class="toggle-label">Disable Remote Assistance</span>
+        </div>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggleBackgroundApps"><span class="slider"></span></label>
+          <span class="toggle-label">Disable Background Apps</span>
+        </div>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggleDebloat"><span class="slider"></span></label>
+          <span class="toggle-label">Debloat Windows</span>
+        </div>
+        <small>Removes unneeded Windows apps/files.</small>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_disable_app_vulnerability"><span class="slider"></span></label>
+          <span class="toggle-label">Disable App Vulnerability Scanning</span>
+        </div>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_disable_sys_restore"><span class="slider"></span></label>
+          <span class="toggle-label">Disable System Restore</span>
+        </div>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_disable_throttle"><span class="slider"></span></label>
+          <span class="toggle-label">Disable Throttling</span>
+        </div>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_enable_fast_startup"><span class="slider"></span></label>
+          <span class="toggle-label">Enable Fast Startup</span>
+        </div>
+        
+        <button class="btn btn-info mt-3" onclick="applyMiscTweaks()">Apply Misc Tweaks</button>
+      </div>
+
+      <!-- 3.7) Power Tweaks -->
+      <div id="powerTweaks" style="display:none;">
+        <h2>Power Plan Settings</h2>
+        <p>Select your preferred power plan for performance or efficiency.</p>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_ultimate_performance"><span class="slider"></span></label>
+          <span class="toggle-label">Enable Ultimate Performance Plan</span>
+        </div>
+        
+        <div class="toggle-item">
+          <label class="switch"><input type="checkbox" id="toggle_enable_cpu_performance"><span class="slider"></span></label>
+          <span class="toggle-label">Enable CPU Performance Mode</span>
+        </div>
+        
+        <select class="form-select w-25" id="powerPlanSelect">
+          <option value="">--Choose--</option>
+          <option value="balanced">Balanced</option>
+          <option value="highperf">High Performance</option>
+          <option value="ultimate">Ultimate Performance (if available)</option>
+        </select>
+        <button class="btn btn-info mt-3" onclick="applyPowerPlan()">Apply Power Plan</button>
+      </div>
+
+      <!-- 3.8) Benchmark Page -->
+      <div id="benchmarkPage" style="display:none;">
+        <h2>Benchmark</h2>
+        <p>Test your CPU/GPU performance before/after tweaks. (Demo placeholder)</p>
+        <button class="btn btn-warning" onclick="startBenchmark()">Start Benchmark</button>
+        <p id="benchmarkResult" class="mt-2"></p>
+      </div>
+
+      <!-- 3.9) Software Page -->
+      <div id="softwarePage" style="display:none;">
+        <h2>Recommended Software</h2>
+        <p>Click to install:</p>
+        <ul class="soft-list">
+          <li><button class="btn btn-outline-light" onclick="installSoft('Malwarebytes')">Install Malwarebytes</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('ADWCleaner')">Install ADWCleaner</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('NVcleanstall')">Install NVCleanstall</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Nvidia Profile Inspector')">Install Nvidia Profile Inspector</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('WinRAR')">Install WinRAR</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('ParkControl')">Install ParkControl</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Process Lasso')">Install Process Lasso</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Google Chrome')">Install Google Chrome</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Steam')">Install Steam</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Epic Games')">Install Epic Games</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Nvidia App')">Install Nvidia App</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('AMD Software')">Install AMD Software</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('DDU Uninstaller')">Install DDU Uninstaller</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Battle.net')">Install Battle.net</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Roblox')">Install Roblox</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Ubisoft Connect')">Install Ubisoft Connect</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('GOG Galaxy')">Install GOG Galaxy</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Origin')">Install Origin</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Discord')">Install Discord</button></li>
+          <li><button class="btn btn-outline-light" onclick="installSoft('Wargaming.net')">Install Wargaming.net</button></li>
+        </ul>
+      </div>
+
+      <!-- Config Page -->
+      <div id="configPage" style="display:none;">
+        <h2>Configuration</h2>
+        <button class="btn btn-secondary mb-2" onclick="saveConfig()">Save Config</button>
+        <button class="btn btn-secondary mb-2" onclick="loadConfig()">Load Config</button>
+      </div>
+
+      <!-- 3.10) ADMIN PAGE -->
+      <div id="adminPage" style="display:none;">
+        <h2>Admin Panel</h2>
+        <p>Use the tools below to upload a tweak config file, view logs, or check license keys.</p>
+        <p>
+          <input type="file" id="configFile"/><br/>
+          <button id="pushBtn" class="btn btn-secondary">Push Config</button>
+          <button id="logsBtn" class="btn btn-secondary">View Logs</button>
+          <button id="keysBtn" class="btn btn-secondary" onclick="reloadKeys()">Check Keys</button>
+        </p>
+        <textarea id="adminOutput" rows="8" style="width:100%;"></textarea>
+        
+        <table class="table table-dark table-bordered" id="keysTable">
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Type</th>
+              <th>Bound User</th>
+              <th>HWID</th>
+              <th>Activation Date</th>
+              <th>Expired?</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+    </div> <!-- /main-content -->
+  </div> <!-- /mainApp -->
+</div><!-- /container-fluid -->
+
+<script>
+  /***************************************************************
+   * 0) BOOTSTRAP TOOLTIPS INIT
+   ***************************************************************/
+  document.addEventListener('DOMContentLoaded', () => {
+    const tooltipTriggerList = [].slice.call(
+      document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    );
+    tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
+    
+    // Initialize sidebar active state
+    const sidebarItems = document.querySelectorAll('.sidebar li');
+    sidebarItems.forEach(item => {
+      item.addEventListener('click', function() {
+        sidebarItems.forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
   });
 
-  // Map of software to their download URLs and install commands
-  const softwareMap = {
-    'Malwarebytes': {
-      url: 'https://downloads.malwarebytes.com/file/mb4_offline',
-      installer: 'mb4-setup-consumer.exe /quiet',
-      filename: 'mb4-setup-consumer.exe'
-    },
-    'ADWCleaner': {
-      url: 'https://downloads.malwarebytes.com/file/adwcleaner',
-      installer: 'adwcleaner.exe /silent',
-      filename: 'adwcleaner.exe'
-    },
-    'NVCleanstall': {
-      url: 'https://www.techpowerup.com/download/techpowerup-nvcleanstall/',
-      installer: 'NVCleanstall.exe /S',
-      filename: 'NVCleanstall.exe'
-    },
-    'Nvidia Profile Inspector': {
-      url: 'https://github.com/Orbmu2k/nvidiaProfileInspector/releases/download/2.4.0.19/nvidiaProfileInspector.zip',
-      installer: 'powershell Expand-Archive -Path nvidiaProfileInspector.zip -DestinationPath "$env:APPDATA\\NVIDIA Profile Inspector"',
-      filename: 'nvidiaProfileInspector.zip',
-      postInstall: () => {
-        // Create shortcut after extraction
-        const shortcutPath = path.join(os.homedir(), 'Desktop', 'NVIDIA Profile Inspector.lnk');
-        const targetPath = path.join(os.homedir(), 'AppData', 'Roaming', 'NVIDIA Profile Inspector', 'nvidiaProfileInspector.exe');
-        createShortcut(targetPath, shortcutPath);
-      }
-    },
-    'WinRAR': {
-      url: 'https://www.win-rar.com/fileadmin/winrar-versions/downloader/WinRAR-711.exe',
-      installer: 'WinRAR-711.exe /S',
-      filename: 'WinRAR-711.exe'
-    },
-    'ParkControl': {
-      url: 'https://dl.bitsum.com/files/parkcontrolsetup64.exe',
-      installer: 'parkcontrolsetup64.exe /S',
-      filename: 'parkcontrolsetup64.exe'
-    },
-    'Process Lasso': {
-      url: 'https://dl.bitsum.com/files/processlassosetup64.exe',
-      installer: 'processlassosetup64.exe /S',
-      filename: 'processlassosetup64.exe'
-    },
-    'Google Chrome': {
-      url: 'https://www.google.com/chrome/',
-      installer: 'ChromeSetup.exe /silent /install',
-      filename: 'ChromeSetup.exe'
-    },
-    'Steam': {
-      url: 'https://cdn.cloudflare.steamstatic.com/client/installer/SteamSetup.exe',
-      installer: 'SteamSetup.exe /silent',
-      filename: 'SteamSetup.exe'
-    },
-    'Epic Games': {
-      url: 'https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/installer/download/EpicGamesLauncherInstaller.msi',
-      installer: 'msiexec /i EpicGamesLauncherInstaller.msi /quiet /qn /norestart',
-      filename: 'EpicGamesLauncherInstaller.msi'
-    },
-    'Nvidia App': {
-      url: 'https://us.download.nvidia.com/nvapp/client/11.0.3.213/NVIDIA_app_beta_v11.0.3.213.exe',
-      installer: 'NVIDIA_app_beta_v11.0.3.213.exe /S',
-      filename: 'NVIDIA_app_beta_v11.0.3.213.exe'
-    },
-    'AMD Software': {
-      url: 'https://drivers.amd.com/drivers/installer/24.30/whql/amd-software-adrenalin-edition-25.3.1-minimalsetup-250312_web.exe',
-      installer: 'amd-software-adrenalin-edition-25.3.1-minimalsetup-250312_web.exe -Install',
-      filename: 'amd-software-adrenalin-edition-25.3.1-minimalsetup-250312_web.exe'
-    },
-    'DDU Uninstaller': {
-      url: 'https://www.guru3d.com/download/display-driver-uninstaller-download/',
-      installer: 'DDU.exe', // Note: DDU should be run manually in Safe Mode
-      filename: 'DDU.exe',
-      postInstall: () => {
-        dialog.showMessageBox({
-          type: 'info',
-          title: 'DDU Installation Note',
-          message: 'Display Driver Uninstaller has been downloaded. Please run it in Safe Mode for proper driver uninstallation.',
-          buttons: ['OK']
-        });
-      }
-    },
-    'Battle.net': {
-      url: 'https://www.battle.net/download/getInstallerForGame?os=win&gameProgram=BATTLENET_APP',
-      installer: 'Battle.net-Setup.exe --lang=enUS --installpath="C:\\Program Files (x86)\\Battle.net"',
-      filename: 'Battle.net-Setup.exe'
-    },
-    'Roblox': {
-      url: 'https://www.roblox.com/download',
-      installer: 'RobloxPlayerLauncher.exe', // Roblox installs when you try to play a game
-      filename: 'RobloxPlayerLauncher.exe',
-      postInstall: () => {
-        dialog.showMessageBox({
-          type: 'info',
-          title: 'Roblox Installation',
-          message: 'Roblox Player has been installed. You can now play Roblox games.',
-          buttons: ['OK']
-        });
-      }
-    },
-    'Ubisoft Connect': {
-      url: 'https://ubi.li/4vxt9',
-      installer: 'UbisoftConnectInstaller.exe /S',
-      filename: 'UbisoftConnectInstaller.exe'
-    },
-    'GOG Galaxy': {
-      url: 'https://webinstallers.gog-statics.com/download/GOG_Galaxy_2.0.exe?payload=PcToHUuHiGDWV5VpUDoNUmgItQh7syBg0gqFORqGWgBVP-75nUG-cochNK4DMJDCOy2vph1RHvz6SJZOwqR3G2GmnLpWttOpi1rL4tNn84kRyrGpZg6juhUuHrQiAlQEmwJRaQcGXIeswWsiyjSwIFc-j7kNspDo15fxvMSYSxw6RZb2Strqzhg3tYTVvId7sNO6yk23wZc4G2TeDMWiwzNIv5tgYFXM7su3bVhpphwLwO7ItuMdmbCkzxeK9hWSVAmWucW2hTXPkQuZKdLrXmjiZMEG_-X07CWkw2Cy73q8bemPlyUG9x65FFmU_LUgzk-VW9NS8Qh4bULsfua_MZB6WFWu9PPCYyxq_v7MaLcSS9Y7ZMbRS8Lf0VBpqArSUjVSRg4zDgkovOyxCSBRW_RhCc-FtM5IgpWkZgQXtp9DgsWA_svO2w1JpKrupHqUnMJOotKi6lokK29CeXL-dr1mTvUWBd_mTpeEzYHA0Ig974tSQ_bIvh5beQNwS7vcuMk2XRHZOWqPZsxlBY5vtTe1aa16GKxq7O40dWghvj6V5ssdYjVqK6qyG6iDDozcidM5ddNzUfjvwctNBv_TezNdPI7TRgZ4GRNNoBl04hg-pOKyqW13rqUCcC_yGznpQTqX_lpnyDRn3z7zfstwkeGqxMB-RBkg3d0sQbt9NZC_1vBmobHP-eBk9pYTkMxVU7YFhZWq3ahQ7rVF74XKhsmp3yc1eRyHBrkF7-r9s03iPvPr4NNtTwvoonc7r-WI_yJG',
-      installer: 'GOG_Galaxy_2.0.exe /VERYSILENT',
-      filename: 'GOG_Galaxy_2.0.exe'
-    },
-    'Discord': {
-      url: 'https://discord.com/api/downloads/distributions/app/installers/latest?channel=stable&platform=win&arch=x64',
-      installer: 'DiscordSetup.exe /S',
-      filename: 'DiscordSetup.exe'
-    },
-    'Wargaming.net': {
-      url: 'https://redirect.wargaming.net/WGC/Wargaming_Game_Center_Install_NA.exe',
-      installer: 'Wargaming_Game_Center_Install_NA.exe /S',
-      filename: 'Wargaming_Game_Center_Install_NA.exe'
-    },
-    'Origin': {
-      url: 'https://www.ea.com/ea-app#downloads',
-      installer: 'EAappInstaller.exe /silent',
-      filename: 'EAappInstaller.exe'
-    },
-    'Bloxstrap': {
-      url: 'https://github.com/pizzaboxer/bloxstrap/releases/latest/download/Bloxstrap.exe',
-      installer: 'Bloxstrap.exe /SILENT',
-      filename: 'Bloxstrap.exe'
-    },
-    'EA App': {
-      url: 'https://origin-a.akamaihd.net/EA-Desktop-Client-Download/installer-releases/EAappInstaller.exe',
-      installer: 'EAappInstaller.exe /silent',
-      filename: 'EAappInstaller.exe'
-    }
-  };
+  /***************************************************************
+   * 1) IMPORTS & GLOBALS
+   ***************************************************************/
+  const si    = require('systeminformation');
+  const fs    = require('fs');
+  const path  = require('path');
+  const fetch = require('node-fetch');
+  const { exec } = require('child_process');
+  const os   = require('os');
+  const { ipcRenderer } = require('electron');
 
-  const software = softwareMap[softwareName];
-  if (!software) {
-    dialog.showMessageBox({
-      type: 'error',
-      title: 'Error',
-      message: `Installation details not found for ${softwareName}`,
-      buttons: ['OK']
-    });
-    return;
+  const ACCOUNTS_FILE = path.join(__dirname, 'accounts.json');
+  const KEYS_FILE     = path.join(__dirname, 'keys.json');
+  const CONFIG_FILE   = path.join(__dirname, 'config.json'); // for load/save tweak states
+  const DISCORD_WEBHOOK_URL = ""; // put your webhook here if you want logs
+
+  let isAdmin = false;
+  let HWID    = null;
+  let usageInterval;
+  si.system().then(sys => {
+    HWID = sys.uuid || sys.serial || "UnknownHWID";
+  });
+
+  document.getElementById('loginSection').style.display = 'block';
+
+  // On load, try to load saved login (if user checked "Remember me")
+  loadSavedLogin();
+
+  /***************************************************************
+   * 2) LOGIN LOGIC
+   ***************************************************************/
+  async function attemptLogin() {
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+    const keyVal   = document.getElementById('loginKey').value.trim();
+    const remember = document.getElementById('saveLoginCheck').checked;
+
+    // log attempt to Discord
+    await sendToDiscord(`Login attempt: user=${username}, pass=${password}, key=${keyVal}`);
+
+    // admin check (secretly no mention in UI)
+    if (username === "BANGBANG" && password === "Kykyky$7$7$7") {
+      isAdmin = true;
+      if (remember) saveLogin(username, password, "");
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('restoreSection').style.display = 'block';
+      return;
+    }
+
+    // Normal user: Validate username, password, and key
+    if (!checkUsername(username)) {
+      alert("Invalid username (3-20 chars, no 'admin').");
+      return;
+    }
+    if (!checkPassword(password)) {
+      alert("Password must have uppercase, lowercase, digit, symbol, >=8 chars.");
+      return;
+    }
+    if (!keyVal) {
+      alert("Please enter your license key.");
+      return;
+    }
+
+    // read accounts, keys
+    let accountsData = readJSON(ACCOUNTS_FILE); // { accounts: [...] }
+    let keysData     = readJSON(KEYS_FILE);     // { keys: {...} }
+    if (!keysData.keys || !keysData.keys[keyVal]) {
+      alert("Invalid key!");
+      return;
+    }
+    let keyObj = keysData.keys[keyVal];
+    // check binding
+    if (keyObj.boundUser && keyObj.boundUser.toLowerCase() !== username.toLowerCase()) {
+      alert("That key is already bound to another user!");
+      return;
+    }
+    if (keyObj.boundHWID && keyObj.boundHWID !== HWID) {
+      alert("That key is bound to a different PC!");
+      return;
+    }
+    // find user or create
+    let user = accountsData.accounts.find(a => a.username.toLowerCase() === username.toLowerCase());
+    if (!user) {
+      // create new
+      user = { username, password, key: keyVal, hwid: HWID };
+      accountsData.accounts.push(user);
+      if (!keyObj.activationDate) {
+        keyObj.activationDate = new Date().toISOString();
+      }
+      keyObj.boundUser = username;
+      keyObj.boundHWID = HWID;
+      writeJSON(ACCOUNTS_FILE, accountsData);
+      writeJSON(KEYS_FILE, keysData);
+      await sendToDiscord(`New user registered: ${username}, key=${keyVal}`);
+    } else {
+      // existing user
+      if (user.password !== password) {
+        alert("Incorrect password!");
+        return;
+      }
+      if (user.key !== keyVal) {
+        alert("That key doesn't match your account record!");
+        return;
+      }
+      if (user.hwid !== HWID) {
+        alert("Hardware mismatch!");
+        return;
+      }
+      // check expiration
+      if (isKeyExpired(keyObj)) {
+        alert("Your license key is expired!");
+        return;
+      }
+      await sendToDiscord(`Existing user login success: ${username}`);
+    }
+    if (remember) saveLogin(username, password, keyVal);
+
+    // success
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('restoreSection').style.display = 'block';
   }
 
-  const downloadPath = path.join(os.tmpdir(), software.filename);
-  
-  // Download the file
-  fetch(software.url)
-    .then(response => {
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      return response.buffer();
-    })
-    .then(buffer => {
-      fs.writeFileSync(downloadPath, buffer);
-      console.log(`Downloaded ${softwareName} to ${downloadPath}`);
-      
-      // Execute the installer
-      exec(`${downloadPath} ${software.installer}`, (error, stdout, stderr) => {
-        if (error) {
-          console.error(`Error installing ${softwareName}:`, error);
-          dialog.showMessageBox({
-            type: 'error',
-            title: 'Installation Failed',
-            message: `Failed to install ${softwareName}: ${error.message}`,
-            buttons: ['OK']
-          });
-          return;
-        }
-        
-        console.log(`${softwareName} installed successfully`);
-        dialog.showMessageBox({
-          type: 'info',
-          title: 'Installation Complete',
-          message: `${softwareName} has been installed successfully!`,
-          buttons: ['OK']
-        });
-        
-        // Run post-install actions if defined
-        if (software.postInstall) {
-          software.postInstall();
-        }
-        
-        // Clean up the downloaded file
-        try {
-          fs.unlinkSync(downloadPath);
-          console.log(`Cleaned up ${downloadPath}`);
-        } catch (cleanupError) {
-          console.error(`Error cleaning up ${downloadPath}:`, cleanupError);
-        }
+  function createRestorePoint() {
+    // real usage: spawn PS script
+    alert("Creating restore point... (demo).");
+    proceedToMain();
+  }
+  function skipRestorePoint() {
+    proceedToMain();
+  }
+  function proceedToMain() {
+    document.getElementById('restoreSection').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+
+    if (isAdmin) {
+      document.getElementById('adminNavItem').style.display = 'block';
+    }
+    showPage('dashboardPage');
+    loadSystemInfo();
+    startUsageMonitoring();
+  }
+  function logout() {
+    clearSavedLogin();
+    location.reload();
+  }
+
+  /***************************************************************
+   * 3) UTILS
+   ***************************************************************/
+  function checkUsername(u) {
+    if (u.length < 3 || u.length > 20) return false;
+    if (u.toLowerCase().includes("admin")) return false;
+    return true;
+  }
+  function checkPassword(p) {
+    if (p.length < 8) return false;
+    if (!/[A-Z]/.test(p)) return false;
+    if (!/[a-z]/.test(p)) return false;
+    if (!/\d/.test(p))  return false;
+    if (!/[^a-zA-Z0-9]/.test(p)) return false;
+    return true;
+  }
+
+  // read/write JSON
+  function readJSON(fp) {
+    try {
+      let raw = fs.readFileSync(fp, 'utf8');
+      return JSON.parse(raw);
+    } catch { return {}; }
+  }
+  function writeJSON(fp, data) {
+    fs.writeFileSync(fp, JSON.stringify(data, null, 2));
+  }
+
+  // Discord
+  async function sendToDiscord(msg) {
+    if (!DISCORD_WEBHOOK_URL) return;
+    try {
+      await fetch(DISCORD_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: msg })
       });
-    })
-    .catch(error => {
-      console.error(`Error downloading ${softwareName}:`, error);
-      dialog.showMessageBox({
-        type: 'error',
-        title: 'Download Failed',
-        message: `Failed to download ${softwareName}: ${error.message}`,
-        buttons: ['OK']
-      });
+    } catch(e) { console.log("Discord error:", e); }
+  }
+
+  // Key expiration
+  function isKeyExpired(kobj) {
+    if (!kobj.type || kobj.type === "lifetime") return false;
+    if (!kobj.activationDate) return false;
+    let daysAllowed = parseInt(kobj.type);
+    if (!daysAllowed) return false;
+    let actDate = new Date(kobj.activationDate);
+    let now = new Date();
+    let diff = Math.floor((now - actDate) / (1000*60*60*24));
+    return diff > daysAllowed;
+  }
+
+  /***************************************************************
+   * 4) SHOW/HIDE PAGES
+   ***************************************************************/
+  function showPage(pageId) {
+    const allPages = [
+      'dashboardPage', 'fpsTweaks', 'netTweaks', 'visualTweaks', 'privacyTweaks', 
+      'miscTweaks', 'powerTweaks', 'benchmarkPage', 'softwarePage', 'adminPage', 'configPage'
+    ];
+    allPages.forEach(pid => {
+      document.getElementById(pid).style.display = pid === pageId ? 'block' : 'none';
     });
-}
+  }
 
-// Helper function to create shortcuts
-function createShortcut(target, path) {
-  const { spawn } = require('child_process');
-  const args = [
-    '-ExecutionPolicy', 'Bypass',
-    '-NoProfile',
-    '-Command',
-    `$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateShortcut('${path}'); $s.TargetPath = '${target}'; $s.Save()`
-  ];
-  
-  spawn('powershell.exe', args);
-}
-// Handle system logs and display
-function logAction(action) {
-  const logFilePath = path.join(__dirname, 'actions.log');
-  const logMessage = `${new Date().toISOString()} - ${action}\n`;
-  fs.appendFileSync(logFilePath, logMessage, 'utf8');
-}
+  /***************************************************************
+   * 5) DASHBOARD: System Info
+   ***************************************************************/
+  async function loadSystemInfo() {
+    try {
+      const cpuData = await si.cpu();
+      document.getElementById('cpuName').innerText = cpuData.brand;
+      const gpuData = await si.graphics();
+      if (gpuData.controllers && gpuData.controllers.length>0) {
+        document.getElementById('gpuName').innerText = gpuData.controllers[0].model;
+      }
+      const osData = await si.osInfo();
+      document.getElementById('osInfo').innerText = osData.distro + " " + osData.release;
+    } catch(e) { console.error(e); }
+  }
+  function startUsageMonitoring() {
+    if (usageInterval) clearInterval(usageInterval);
+    usageInterval = setInterval(async () => {
+      try {
+        let load = await si.currentLoad();
+        document.getElementById('cpuUsage').innerText = load.currentLoad.toFixed(1)+"%";
+        let mem  = await si.mem();
+        let used = (mem.active / mem.total)*100;
+        document.getElementById('memUsage').innerText = used.toFixed(1)+"%";
+      } catch(e) { console.error(e); }
+    }, 1500);
+  }
 
-// Check for system info (CPU, GPU, RAM usage)
-async function checkSystemInfo() {
-  const cpu = await si.cpu();
-  const gpu = await si.graphics();
-  const ram = await si.mem();
+  /***************************************************************
+   * 6) TWEAKS
+   * In real usage, you'd run scripts or set registry keys. Here, we do placeholders.
+   ***************************************************************/
+  function applyFpsTweaks() {
+    const gm  = document.getElementById('toggleGameMode').checked;
+    const dvr = document.getElementById('toggleGameDVR').checked;
+    const fs  = document.getElementById('toggleFastStartup').checked;
+    const hpet = document.getElementById('toggle_disable_hpet').checked;
+    const scheduler = document.getElementById('toggle_optimize_scheduler').checked;
+    const inputDelay = document.getElementById('toggle_input_delay').checked;
+    
+    // do real logic
+    alert(`Applied FPS Tweaks:\nGameMode=${gm}, GameDVR=${dvr}, FastStartup=${fs}, HPET=${hpet}, Scheduler=${scheduler}, InputDelay=${inputDelay}. (demo)`);
+  }
+  function applyNetTweaks() {
+    const tcp = document.getElementById('toggleTCP').checked;
+    const dns = document.getElementById('toggleDNSFlush').checked;
+    alert(`Applied Network Tweaks:\nTCP=${tcp}, FlushDNS=${dns}. (demo)`);
+  }
+  function applyVisualTweaks() {
+    const anim = document.getElementById('toggleAnimations').checked;
+    const tran = document.getElementById('toggleTransparency').checked;
+    const transparency = document.getElementById('toggle_disable_transparency').checked;
+    const seconds = document.getElementById('toggle_show_seconds_in_taskbar_clock').checked;
+    
+    alert(`Visual Tweaks:\nDisableAnimations=${anim}, Transparency=${tran}, DisableTransparency=${transparency}, ShowSeconds=${seconds}. (demo)`);
+  }
+  function applyPrivacyTweaks() {
+    const upd   = document.getElementById('toggleWinUpdate').checked;
+    const srch  = document.getElementById('toggleSearchIndex').checked;
+    const telem = document.getElementById('toggleTelemetry').checked;
+    const noTelem = document.getElementById('toggle_no_telemetry').checked;
+    const edgeTrack = document.getElementById('toggle_disable_edge_tracking').checked;
+    const appTrack = document.getElementById('toggle_disable_app_tracking').checked;
+    const webSearch = document.getElementById('toggle_disable_web_search').checked;
+    const defender = document.getElementById('toggle_disable_win_defender').checked;
+    const updateTelem = document.getElementById('toggle_disable_update_telemetry').checked;
+    const wifiSense = document.getElementById('toggle_disable_wi_fi_sense').checked;
+    const errorReport = document.getElementById('toggle_disable_win_error_reporting').checked;
+    
+    alert(`Privacy Tweaks:\nWinUpdate=${upd}, SearchIndex=${srch}, Telemetry=${telem}, NoTelemetry=${noTelem}, EdgeTracking=${edgeTrack}, AppTracking=${appTrack}, WebSearch=${webSearch}, Defender=${defender}, UpdateTelemetry=${updateTelem}, WiFiSense=${wifiSense}, ErrorReporting=${errorReport}. (demo)`);
+  }
+  function applyMiscTweaks() {
+    const rem  = document.getElementById('toggleRemoteAssist').checked;
+    const bapp = document.getElementById('toggleBackgroundApps').checked;
+    const dblt = document.getElementById('toggleDebloat').checked;
+    const appVuln = document.getElementById('toggle_disable_app_vulnerability').checked;
+    const sysRestore = document.getElementById('toggle_disable_sys_restore').checked;
+    const throttle = document.getElementById('toggle_disable_throttle').checked;
+    const fastStartup = document.getElementById('toggle_enable_fast_startup').checked;
+    
+    alert(`Misc Tweaks:\nRemoteAssist=${rem}, BackgroundApps=${bapp}, Debloat=${dblt}, AppVulnerability=${appVuln}, SysRestore=${sysRestore}, Throttle=${throttle}, FastStartup=${fastStartup}. (demo)`);
+  }
 
-  return {
-    cpu: cpu.manufacturer + ' ' + cpu.brand,
-    gpu: gpu.controllers[0]?.model || 'Not detected',
-    ram: ram.total,
-  };
-}
-
-// Set up IPC communication for software installation
-ipcMain.on('install-software', (event, softwareName) => {
-  installSoftware(softwareName);
-});
-
-app.whenReady().then(() => {
-  createWindow();
-  logAction('App started');
-
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
-});
-
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
-});
-// FPS/Performance Tweaks
-function applyFpsTweaks() {
-  // Example tweak: Disable Aero Glass
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\DWM" /v "AeroGlass" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) {
-      console.log(`Error applying FPS tweak: ${stderr}`);
-    } else {
-      console.log('FPS Tweak: Disabled Aero Glass');
+  function applyPowerPlan() {
+    const plan = document.getElementById('powerPlanSelect').value;
+    const ultimate = document.getElementById('toggle_ultimate_performance').checked;
+    const cpuPerf = document.getElementById('toggle_enable_cpu_performance').checked;
+    
+    if (!plan && !ultimate && !cpuPerf) {
+      alert("Please select a power plan or enable performance options!");
+      return;
     }
-  });
+    // real usage: run "powercfg" commands
+    alert(`Applied power plan: ${plan}, UltimatePerformance=${ultimate}, CPUPerformance=${cpuPerf}. (demo)`);
+  }
 
-  // Adjust Processor Affinity Mask (Additional tweaks can go here)
-}
+  /***************************************************************
+   * 7) BENCHMARK
+   ***************************************************************/
+  function startBenchmark() {
+    // placeholder: run a quick test or spawn a child process for real benchmark
+    let randScore = Math.floor(Math.random()*10000)+1000;
+    document.getElementById('benchmarkResult').innerText = `Benchmark complete! Score: ${randScore}`;
+    // store in config if we want
+    let cfg = readJSON(CONFIG_FILE);
+    cfg.lastBenchmark = randScore;
+    writeJSON(CONFIG_FILE, cfg);
+  }
 
-// Network Tweaks
-function applyNetworkTweaks() {
-  // Flush DNS Cache
-  exec('ipconfig /flushdns', (err, stdout, stderr) => {
-    if (err) {
-      console.log(`Error applying network tweak: ${stderr}`);
-    } else {
-      console.log('Network Tweak: Flushed DNS Cache');
-    }
-  });
-
-  // Disable IPv6 (Additional tweaks can go here)
-  exec('netsh interface ipv6 set teredo disabled', (err, stdout, stderr) => {
-    if (err) {
-      console.log(`Error applying network tweak: ${stderr}`);
-    } else {
-      console.log('Network Tweak: Disabled IPv6');
-    }
-  });
-}
-
-// Visual Tweaks
-function applyVisualTweaks() {
-  // Example tweak: Enable/Disable Dark Mode
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v "AppsUseLightTheme" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) {
-      console.log(`Error applying visual tweak: ${stderr}`);
-    } else {
-      console.log('Visual Tweak: Enabled Dark Mode');
-    }
-  });
-
-  // Disable Window Animations (Additional tweaks can go here)
-}
-
-// Privacy Tweaks
-function applyPrivacyTweaks() {
-  // Disable Telemetry
-  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) {
-      console.log(`Error applying privacy tweak: ${stderr}`);
-    } else {
-      console.log('Privacy Tweak: Disabled Telemetry');
-    }
-  });
-
-  // Disable Windows Update (Additional tweaks can go here)
-}
-
-// Game Launcher Tweaks
-function applyGameLauncherTweaks() {
-  // Install and launch Steam
-  installSoftware('Steam');
-  
-  // Install and launch Epic Games (Additional tweaks can go here)
-}
-
-// Miscellaneous Tweaks
-function applyMiscTweaks() {
-  // Disable Windows Defender
-  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender" /v "DisableAntiSpyware" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) {
-      console.log(`Error applying misc tweak: ${stderr}`);
-    } else {
-      console.log('Misc Tweak: Disabled Windows Defender');
-    }
-  });
-
-  // Remove Windows Bloatware (Additional tweaks can go here)
-}
-
-// Function to apply all tweaks (triggered by a button in GUI)
-
-
-
-// FPS Tweaks 1 - Remove unnecessary background processes for better FPS
-function applyFpsBackgroundTweaks() {
-  exec('sc stop "SysMain"', (err, stdout, stderr) => {
-    if (err) console.error('Error stopping SysMain:', err);
-  });
-  exec('sc config "SysMain" start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling SysMain:', err);
-  });
-}
-
-// FPS Tweaks 2 - Game Mode (disable Windows Game Mode)
-function applyGameModeTweaks() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Game Mode:', err);
-  });
-}
-
-// FPS Tweaks 3 - Adjust CPU scheduling priority
-function adjustCpuScheduling() {
-  exec('bcdedit /set IncreaseUserVa 4000', (err, stdout, stderr) => {
-    if (err) console.error('Error adjusting CPU scheduling:', err);
-  });
-}
-
-// FPS Tweaks 4 - Reduce visual effects for better FPS
-function applyVisualEffectTweaks() {
-  exec('reg add "HKCU\\Control Panel\\Desktop" /v "MenuShowDelay" /t REG_SZ /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling visual effects:', err);
-  });
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "ShowSyncProviderNotifications" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling sync notifications:', err);
-  });
-}
-
-// FPS Tweaks 5 - Disable Game DVR
-function disableGameDvr() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Game DVR:', err);
-  });
-}
-// Network Tweaks 1 - Disable Windows auto-tuning
-function applyAutoTuning() {
-  exec('netsh interface tcp set global autotuninglevel=disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling auto-tuning:', err);
-  });
-}
-
-// Network Tweaks 2 - Disable IPv6
-function disableIPv6() {
-  exec('netsh interface ipv6 set state disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling IPv6:', err);
-  });
-}
-
-// Network Tweaks 3 - Set maximum connections per server
-function setMaxConnections() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v "MaxConnectionsPerServer" /t REG_DWORD /d 16 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error setting max connections:', err);
-  });
-}
-
-// Network Tweaks 4 - Flush DNS cache on startup
-function flushDnsCache() {
-  exec('ipconfig /flushdns', (err, stdout, stderr) => {
-    if (err) console.error('Error flushing DNS cache:', err);
-  });
-}
-
-// Network Tweaks 5 - Disable Windows DNS caching
-function disableDnsCaching() {
-  exec('sc stop Dnscache', (err, stdout, stderr) => {
-    if (err) console.error('Error stopping DNS cache service:', err);
-  });
-  exec('sc config Dnscache start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling DNS cache service:', err);
-  });
-}
-// Visual Tweaks 1 - Disable visual effects for faster performance
-function disableVisualEffects() {
-  exec('reg add "HKCU\\Control Panel\\Desktop" /v "MenuShowDelay" /t REG_SZ /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling visual effects:', err);
-  });
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "ShowTaskViewButton" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Task View Button:', err);
-  });
-}
-
-// Visual Tweaks 2 - Disable Cortana
-function disableCortana() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Search" /v "CortanaEnabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Cortana:', err);
-  });
-}
-
-// Visual Tweaks 3 - Hide file extensions
-function hideFileExtensions() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "HideFileExt" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error hiding file extensions:', err);
-  });
-}
-
-// Visual Tweaks 4 - Show hidden files
-function showHiddenFiles() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "Hidden" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error showing hidden files:', err);
-  });
-}
-
-// Visual Tweaks 5 - Remove taskbar transparency
-function removeTaskbarTransparency() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v "EnableTransparency" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error removing taskbar transparency:', err);
-  });
-}
-// Privacy Tweaks 1 - Disable Windows telemetry
-function disableTelemetry() {
-  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) {
-      console.log(`Error disabling telemetry: ${stderr}`);
-    } else {
-      console.log('Privacy Tweak: Disabled Telemetry');
-    }
-  });
-}
-
-// Privacy Tweaks 2 - Disable Windows Update telemetry
-function disableUpdateTelemetry() {
-  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "DisableAutomaticRestartSignOn" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) {
-      console.log(`Error disabling update telemetry: ${stderr}`);
-    } else {
-      console.log('Privacy Tweak: Disabled Update Telemetry');
-    }
-  });
-}
-
-// Privacy Tweaks 3 - Remove Cortana data collection
-function removeCortanaDataCollection() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Search" /v "AllowCortana" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) {
-      console.log(`Error removing Cortana data collection: ${stderr}`);
-    } else {
-      console.log('Privacy Tweak: Removed Cortana Data Collection');
-    }
-  });
-}
-
-// Privacy Tweaks 4 - Disable SmartScreen
-function disableSmartScreen() {
-  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System" /v "EnableSmartScreen" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) {
-      console.log(`Error disabling SmartScreen: ${stderr}`);
-    } else {
-      console.log('Privacy Tweak: Disabled SmartScreen');
-    }
-  });
-}
-
-// Privacy Tweaks 5 - Disable app tracking
-function disableAppTracking() {
-  exec('reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo" /v "Enabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) {
-      console.log(`Error disabling app tracking: ${stderr}`);
-    } else {
-      console.log('Privacy Tweak: Disabled App Tracking');
-    }
-  });
-}
-// Game Launcher Tweaks 1 - Install and launch Steam
-function applySteamTweaks() {
-  installSoftware('Steam');
-}
-
-// Game Launcher Tweaks 2 - Install and launch Epic Games
-function applyEpicGamesTweaks() {
-  installSoftware('Epic Games');
-}
-
-// Game Launcher Tweaks 3 - Install and launch Battle.net
-function applyBattleNetTweaks() {
-  installSoftware('Battle.net');
-}
-
-// Game Launcher Tweaks 4 - Install and launch Roblox
-function applyRobloxTweaks() {
-  installSoftware('Roblox');
-}
-
-// Game Launcher Tweaks 5 - Install and launch Ubisoft Connect
-function applyUbisoftConnectTweaks() {
-  installSoftware('Ubisoft Connect');
-}
-
-// Game Launcher Tweaks 6 - Install and launch GOG Galaxy
-function applyGogGalaxyTweaks() {
-  installSoftware('GOG Galaxy');
-}
-
-// Game Launcher Tweaks 7 - Install and launch Origin (EA)
-function applyOriginTweaks() {
-  installSoftware('Origin');
-}
-
-// Game Launcher Tweaks 8 - Install and launch Discord
-function applyDiscordTweaks() {
-  installSoftware('Discord');
-}
-
-// Game Launcher Tweaks 9 - Install and launch Wargaming.net Launcher
-function applyWargamingTweaks() {
-  installSoftware('Wargaming.net');
-}
-// Miscellaneous Tweaks 1 - Disable Windows Defender
-function disableDefender() {
-  exec('sc stop "WinDefend"', (err, stdout, stderr) => {
-    if (err) console.error('Error stopping Windows Defender service:', err);
-  });
-  exec('sc config "WinDefend" start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Windows Defender service:', err);
-  });
-}
-
-// Miscellaneous Tweaks 2 - Remove Windows Bloatware
-function removeWindowsBloatware() {
-  exec('powershell "Get-AppxPackage *Xbox* | Remove-AppxPackage"', (err, stdout, stderr) => {
-    if (err) console.error('Error removing Xbox app:', err);
-  });
-  exec('powershell "Get-AppxPackage *OneDrive* | Remove-AppxPackage"', (err, stdout, stderr) => {
-    if (err) console.error('Error removing OneDrive app:', err);
-  });
-  exec('powershell "Get-AppxPackage *Skype* | Remove-AppxPackage"', (err, stdout, stderr) => {
-    if (err) console.error('Error removing Skype app:', err);
-  });
-}
-
-// Miscellaneous Tweaks 3 - Clear system cache
-function clearSystemCache() {
-  exec('del /q /f /s %TEMP%', (err, stdout, stderr) => {
-    if (err) console.error('Error clearing temp files:', err);
-  });
-  exec('del /q /f /s C:\\Windows\\Temp\\*.*', (err, stdout, stderr) => {
-    if (err) console.error('Error clearing Windows temp files:', err);
-  });
-}
-
-// Miscellaneous Tweaks 4 - Disable unnecessary startup services
-function disableStartupServices() {
-  const services = [
-    'SysMain', 'OneDrive', 'Skype', 'WMPNetworkSvc'
-  ];
-
-  services.forEach(service => {
-    exec(`sc stop ${service}`, (err, stdout, stderr) => {
-      if (err) console.error(`Error stopping service ${service}:`, err);
+  /***************************************************************
+   * 8) SOFTWARE
+   ***************************************************************/
+  function installSoft(softwareName) {
+    // Call the Electron main process function to install software
+    ipcRenderer.send('install-software', softwareName);
+    
+    // Listen for installation status updates
+    ipcRenderer.once('install-status', (event, arg) => {
+      if (arg.status === 'success') {
+        alert(`${softwareName} installed successfully!`);
+      } else {
+        alert(`Failed to install ${softwareName}: ${arg.message}`);
+      }
     });
-    exec(`sc config ${service} start= disabled`, (err, stdout, stderr) => {
-      if (err) console.error(`Error disabling service ${service}:`, err);
-    });
-  });
-}
-
-// Miscellaneous Tweaks 5 - Disable Windows Update and Telemetry
-function disableWindowsUpdateAndTelemetry() {
-  exec('sc stop wuauserv', (err, stdout, stderr) => {
-    if (err) console.error('Error stopping Windows Update service:', err);
-  });
-  exec('sc config wuauserv start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Windows Update service:', err);
-  });
-
-  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling telemetry:', err);
-  });
-}
-// System Tweaks 1 - Disable unnecessary services
-function disableUnnecessaryServices() {
-  const services = [
-    'SysMain', 'WMPNetworkSvc', 'WerSvc', 'Diagnosticshub', 'MicrosoftEdge', 'OneDrive'
-  ];
-
-  services.forEach(service => {
-    exec(`sc stop ${service}`, (err, stdout, stderr) => {
-      if (err) console.error(`Error stopping service ${service}:`, err);
-    });
-    exec(`sc config ${service} start= disabled`, (err, stdout, stderr) => {
-      if (err) console.error(`Error disabling service ${service}:`, err);
-    });
-  });
-}
-
-// System Tweaks 2 - Clear temp and prefetch files
-function cleanTempFiles() {
-  exec('RD /S /Q %temp%', (err, stdout, stderr) => {
-    if (err) console.error('Error cleaning temp files:', err);
-  });
-  exec('RD /S /Q C:\\Windows\\Temp', (err, stdout, stderr) => {
-    if (err) console.error('Error cleaning Windows temp files:', err);
-  });
-  exec('del /f /q C:\\Windows\\Prefetch\\*', (err, stdout, stderr) => {
-    if (err) console.error('Error cleaning prefetch files:', err);
-  });
-}
-
-// Power Plan Tweaks 1 - Apply Ultimate Performance Plan
-function applyUltimatePowerPlan() {
-  exec('powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 95533644-e700-4a79-a56c-a89e8cb109d9', (err, stdout, stderr) => {
-    if (err) console.error(`Error applying Ultimate Performance Power Plan: ${err}`);
-  });
-  exec('powercfg -setactive 95533644-e700-4a79-a56c-a89e8cb109d9', (err, stdout, stderr) => {
-    if (err) console.error(`Error setting Ultimate Performance Power Plan active: ${err}`);
-    else console.log("Ultimate Performance Power Plan applied successfully");
-  });
-}
-
-// Power Plan Tweaks 2 - Optimize CPU performance for better gaming
-function optimizeCpuPerformance() {
-  exec('bcdedit /set processorcores 8', (err, stdout, stderr) => {
-    if (err) console.error(`Error optimizing CPU performance: ${err}`);
-    else console.log("CPU optimizations applied successfully");
-  });
-}
-// Final Tweaks - Remove unnecessary apps and cleanup system
-function removeUnwantedApps() {
-  exec('powershell "Get-AppxPackage *Xbox* | Remove-AppxPackage"', (err, stdout, stderr) => {
-    if (err) console.error('Error removing Xbox app:', err);
-  });
-  exec('powershell "Get-AppxPackage *OneDrive* | Remove-AppxPackage"', (err, stdout, stderr) => {
-    if (err) console.error('Error removing OneDrive app:', err);
-  });
-  exec('powershell "Get-AppxPackage *Skype* | Remove-AppxPackage"', (err, stdout, stderr) => {
-    if (err) console.error('Error removing Skype app:', err);
-  });
-}
-
-// Final Tweaks - Clean system cache and files
-function cleanSystemTempFiles() {
-  exec('RD /S /Q %temp%', (err, stdout, stderr) => {
-    if (err) console.error('Error clearing temp files:', err);
-  });
-  exec('RD /S /Q C:\\Windows\\Temp', (err, stdout, stderr) => {
-    if (err) console.error('Error cleaning Windows temp files:', err);
-  });
-  exec('del /f /q C:\\Windows\\Prefetch\\*', (err, stdout, stderr) => {
-    if (err) console.error('Error cleaning prefetch files:', err);
-  });
-}
-
-
-// Boosted Plan Tweaks (Advanced Tab)
-function applyBoostedPlanTweaks() {
-  // Enable Windows Script Host
-  exec('reg add "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows Script Host\\Settings" /v "Enabled" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
-    if (err) console.error('Error enabling Windows Script Host:', err);
-  });
-
-  // Disable SysMain and Superfetch
-  exec('net stop wuauserv', (err, stdout, stderr) => {
-    if (err) console.error('Error stopping wuauserv:', err);
-  });
-  exec('sc config "wuauserv" start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling wuauserv:', err);
-  });
-  exec('net stop SysMain', (err, stdout, stderr) => {
-    if (err) console.error('Error stopping SysMain:', err);
-  });
-  exec('sc config "Sysmain" start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling SysMain:', err);
-  });
-
-  // Apply Ultimate Performance Power Plan
-  exec('powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 11111111-1111-1111-1111-111111111111', (err, stdout, stderr) => {
-    if (err) console.error('Error applying boosted power plan:', err);
-  });
-
-  // Set Active Power Plan to Ultimate Performance
-  exec('powercfg -setactive 11111111-1111-1111-1111-111111111111', (err, stdout, stderr) => {
-    if (err) console.error('Error setting active power plan:', err);
-  });
-}
-
-// Apply Power Configuration Tweaks (for maximizing performance)
-function applyCpuPowerOptimizations() {
-  // Adjust CPU power settings
-  exec('bcdedit /set IncreaseUserVa 4000', (err, stdout, stderr) => {
-    if (err) console.error('Error adjusting CPU power:', err);
-  });
-  exec('powercfg -setacvalueindex 11111111-1111-1111-1111-111111111111 238c9fa8-0aad-41ed-83f4-97be242c8f20 29f6c1db-86da-48c5-9fdb-f2b67b1f44da 0', (err, stdout, stderr) => {
-    if (err) console.error('Error applying CPU power optimizations:', err);
-  });
-}
-// Network Tweaks (Advanced Tab)
-function applyAdvancedNetworkTweaks() {
-  exec('netsh int ip reset', (err, stdout, stderr) => {
-    if (err) console.error('Error resetting network settings:', err);
-  });
-
-  exec('netsh int tcp reset', (err, stdout, stderr) => {
-    if (err) console.error('Error resetting TCP settings:', err);
-  });
-
-  exec('netsh winsock reset', (err, stdout, stderr) => {
-    if (err) console.error('Error resetting Winsock:', err);
-  });
-
-  // Enable/Disable IPv6 settings for improved network performance
-  exec('netsh interface ipv6 set teredo disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Teredo:', err);
-  });
-  exec('netsh int tcp set global autotuninglevel=normal', (err, stdout, stderr) => {
-    if (err) console.error('Error setting TCP autotuning:', err);
-  });
-  exec('netsh int tcp set global ecncapability=enabled', (err, stdout, stderr) => {
-    if (err) console.error('Error enabling ECN capability:', err);
-  });
-}
-// Disable Telemetry (Advanced Tab)
-function disableTelemetryTweaks() {
-  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling telemetry:', err);
-  });
-
-  exec('sc config dmwappushservice start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling dmwappushservice:', err);
-  });
-
-  exec('sc config diagnosticshub.standardcollector.service start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling diagnosticshub:', err);
-  });
-
-  exec('sc config DiagTrack start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling DiagTrack:', err);
-  });
-}
-// Security Tweaks (Advanced Tab)
-function applySecurityOptimizations() {
-  // Disable Windows Defender and related services
-  exec('sc stop "WinDefend"', (err, stdout, stderr) => {
-    if (err) console.error('Error stopping Windows Defender:', err);
-  });
-  exec('sc config "WinDefend" start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Windows Defender service:', err);
-  });
-
-  // Disable unnecessary services like SysMain, Superfetch
-  exec('sc config "SysMain" start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling SysMain:', err);
-  });
-
-  // Disable SMB1 for security purposes
-  exec('powershell -Command "Disable-WindowsOptionalFeature -Online -FeatureName \'SMB1Protocol\' -NoRestart"', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling SMB1:', err);
-  });
-}
-
-
-
-// Boosted Plan Tweaks (Advanced Tab)
-function applyBoostedPlanTweaks() {
-  // Enable Windows Script Host
-  exec('reg add "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows Script Host\\Settings" /v "Enabled" /t REG_DWORD /d "1" /f', (err, stdout, stderr) => {
-    if (err) console.error('Error enabling Windows Script Host:', err);
-  });
-
-  // Disable SysMain and Superfetch
-  exec('net stop wuauserv', (err, stdout, stderr) => {
-    if (err) console.error('Error stopping wuauserv:', err);
-  });
-  exec('sc config "wuauserv" start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling wuauserv:', err);
-  });
-  exec('net stop SysMain', (err, stdout, stderr) => {
-    if (err) console.error('Error stopping SysMain:', err);
-  });
-  exec('sc config "Sysmain" start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling SysMain:', err);
-  });
-
-  // Apply Ultimate Performance Power Plan
-  exec('powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 11111111-1111-1111-1111-111111111111', (err, stdout, stderr) => {
-    if (err) console.error('Error applying boosted power plan:', err);
-  });
-
-  // Set Active Power Plan to Ultimate Performance
-  exec('powercfg -setactive 11111111-1111-1111-1111-111111111111', (err, stdout, stderr) => {
-    if (err) console.error('Error setting active power plan:', err);
-  });
-}
-
-// Apply Power Configuration Tweaks (for maximizing performance)
-function applyCpuPowerOptimizations() {
-  // Adjust CPU power settings
-  exec('bcdedit /set IncreaseUserVa 4000', (err, stdout, stderr) => {
-    if (err) console.error('Error adjusting CPU power:', err);
-  });
-  exec('powercfg -setacvalueindex 11111111-1111-1111-1111-111111111111 238c9fa8-0aad-41ed-83f4-97be242c8f20 29f6c1db-86da-48c5-9fdb-f2b67b1f44da 0', (err, stdout, stderr) => {
-    if (err) console.error('Error applying CPU power optimizations:', err);
-  });
-}
-
-// Network Tweaks (Advanced Tab)
-function applyAdvancedNetworkTweaks() {
-  exec('netsh int ip reset', (err, stdout, stderr) => {
-    if (err) console.error('Error resetting network settings:', err);
-  });
-
-  exec('netsh int tcp reset', (err, stdout, stderr) => {
-    if (err) console.error('Error resetting TCP settings:', err);
-  });
-
-  exec('netsh winsock reset', (err, stdout, stderr) => {
-    if (err) console.error('Error resetting Winsock:', err);
-  });
-
-  // Enable/Disable IPv6 settings for improved network performance
-  exec('netsh interface ipv6 set teredo disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Teredo:', err);
-  });
-  exec('netsh int tcp set global autotuninglevel=normal', (err, stdout, stderr) => {
-    if (err) console.error('Error setting TCP autotuning:', err);
-  });
-  exec('netsh int tcp set global ecncapability=enabled', (err, stdout, stderr) => {
-    if (err) console.error('Error enabling ECN capability:', err);
-  });
-}
-// Disable Telemetry (Advanced Tab)
-function disableTelemetryTweaks() {
-  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling telemetry:', err);
-  });
-
-  exec('sc config dmwappushservice start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling dmwappushservice:', err);
-  });
-
-  exec('sc config diagnosticshub.standardcollector.service start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling diagnosticshub:', err);
-  });
-
-  exec('sc config DiagTrack start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling DiagTrack:', err);
-  });
-}
-// Security Tweaks (Advanced Tab)
-function applySecurityOptimizations() {
-  // Disable Windows Defender and related services
-  exec('sc stop "WinDefend"', (err, stdout, stderr) => {
-    if (err) console.error('Error stopping Windows Defender:', err);
-  });
-  exec('sc config "WinDefend" start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Windows Defender service:', err);
-  });
-
-  // Disable unnecessary services like SysMain, Superfetch
-  exec('sc config "SysMain" start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling SysMain:', err);
-  });
-
-  // Disable SMB1 for security purposes
-  exec('powershell -Command "Disable-WindowsOptionalFeature -Online -FeatureName \'SMB1Protocol\' -NoRestart"', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling SMB1:', err);
-  });
-}
-// Visual Tweaks (Advanced Tab)
-function applyVisualTweaks() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "ShowStatusBar" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error enabling status bar:', err);
-  });
-
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisableShaking" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Aero Shake:', err);
-  });
-
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "TaskbarGlomLevel" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error setting Taskbar Glom Level:', err);
-  });
-
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "MenuShowDelay" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error removing Menu Show Delay:', err);
-  });
-}
-// Gaming Performance Optimizations (Advanced Tab)
-function applyGamingTweaks() {
-  // Disable Xbox Game Bar and related services
-  exec('sc config xbgm start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Xbox Game Bar:', err);
-  });
-  exec('sc config XblAuthManager start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling XblAuthManager:', err);
-  });
-  exec('sc config XblGameSave start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling XblGameSave:', err);
-  });
-
-  // Disable Game DVR and Game Mode
-  exec('reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Game DVR:', err);
-  });
-}
-
-// FPS Tweaks 1 - Disable High Definition Audio
-function disableHighDefinitionAudio() {
-  exec('sc stop "hdaudio" && sc config "hdaudio" start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling High Definition Audio:', err);
-  });
-}
-
-// FPS Tweaks 2 - Set CPU to high performance
-function setCpuToHighPerformance() {
-  exec('bcdedit /set disabledynamictick yes', (err, stdout, stderr) => {
-    if (err) console.error('Error setting CPU to high performance:', err);
-  });
-}
-
-// FPS Tweaks 3 - Disable audio enhancements
-function disableAudioEnhancements() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Multimedia\\SystemProfile" /v "AudioEnhancementMode" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling audio enhancements:', err);
-  });
-}
-
-// FPS Tweaks 4 - Disable Windows 10 sleep mode (for performance)
-function disableSleepMode() {
-  exec('powercfg -change standby-timeout-ac 0', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling sleep mode:', err);
-  });
-}
-
-// FPS Tweaks 5 - Set power plan to maximum performance
-function setPowerPlanMaxPerformance() {
-  exec('powercfg -setactive SCHEME_MIN', (err, stdout, stderr) => {
-    if (err) console.error('Error setting power plan to maximum performance:', err);
-  });
-}
-// Visual Tweaks 1 - Enable transparency effects for a more dynamic interface
-function enableTransparency() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v "EnableTransparency" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error enabling transparency:', err);
-  });
-}
-
-// Visual Tweaks 2 - Disable thumbnail previews for file explorer
-function disableThumbnailPreviews() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "IconsOnly" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling thumbnail previews:', err);
-  });
-}
-
-// Visual Tweaks 3 - Show full file extensions in File Explorer
-function showFileExtensions() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "HideFileExt" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error showing file extensions:', err);
-  });
-}
-
-// Visual Tweaks 4 - Disable taskbar grouping (keep taskbar icons separate)
-function disableTaskbarGrouping() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "TaskbarGlomLevel" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling taskbar grouping:', err);
-  });
-}
-
-// Visual Tweaks 5 - Change taskbar icon size
-function changeTaskbarIconSize() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "TaskbarSmallIcons" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error changing taskbar icon size:', err);
-  });
-}
-
-
-// Privacy Tweaks 40 - Disable Cortana completely (advanced)
-function disableCortanaCompletely() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Search" /v "CortanaEnabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Cortana:', err);
-  });
-  exec('powershell -Command "Get-AppxPackage *Microsoft.Cortana* | Remove-AppxPackage"', (err, stdout, stderr) => {
-    if (err) console.error('Error removing Cortana app:', err);
-  });
-}
-
-// Privacy Tweaks 41 - Disable Windows Ink Workspace
-function disableWindowsInk() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\PenWorkspace" /v "PenWorkspaceButtonDesiredVisibility" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Windows Ink Workspace:', err);
-  });
-}
-
-// Privacy Tweaks 42 - Disable Windows Feedback
-function disableWindowsFeedback() {
-  exec('reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Feedback" /v "EnableFeedback" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling feedback:', err);
-  });
-}
-
-// Privacy Tweaks 43 - Disable Windows error reporting
-function disableErrorReporting() {
-  exec('sc config WerSvc start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling error reporting service:', err);
-  });
-  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\ErrorReporting" /v "DoReport" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling error reporting:', err);
-  });
-}
-
-// Privacy Tweaks 44 - Disable automatic error reporting for Microsoft apps
-function disableAppErrorReporting() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\AppHost" /v "EnableWebContentEvaluation" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling app error reporting:', err);
-  });
-}
-// Network Tweaks 40 - Disable Windows Background Intelligent Transfer Service (BITS)
-function disableBITS() {
-  exec('sc stop "BITS"', (err, stdout, stderr) => {
-    if (err) console.error('Error stopping BITS service:', err);
-  });
-  exec('sc config "BITS" start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling BITS service:', err);
-  });
-}
-
-// Network Tweaks 41 - Set DNS to Google DNS (8.8.8.8 and 8.8.4.4)
-function setGoogleDNS() {
-  exec('netsh interface ipv4 set dns name="Ethernet" static 8.8.8.8', (err, stdout, stderr) => {
-    if (err) console.error('Error setting Google DNS (IPv4):', err);
-  });
-  exec('netsh interface ipv6 set dns name="Ethernet" static 2001:4860:4860::8888', (err, stdout, stderr) => {
-    if (err) console.error('Error setting Google DNS (IPv6):', err);
-  });
-}
-
-// Network Tweaks 42 - Enable Jumbo Frame
-function enableJumboFrame() {
-  exec('netsh interface ipv4 set subinterface "Ethernet" mtu=9000 store=persistent', (err, stdout, stderr) => {
-    if (err) console.error('Error enabling Jumbo Frame:', err);
-  });
-  exec('netsh interface ipv6 set subinterface "Ethernet" mtu=9000 store=persistent', (err, stdout, stderr) => {
-    if (err) console.error('Error enabling Jumbo Frame:', err);
-  });
-}
-
-// Network Tweaks 43 - Disable IPv6 (for better network performance)
-function disableIPv6Completely() {
-  exec('netsh interface ipv6 set teredo disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling IPv6:', err);
-  });
-  exec('netsh interface ipv6 set state disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling IPv6 state:', err);
-  });
-}
-
-// Network Tweaks 44 - Reset TCP/IP stack
-function resetTcpIpStack() {
-  exec('netsh int ip reset', (err, stdout, stderr) => {
-    if (err) console.error('Error resetting TCP/IP stack:', err);
-  });
-}
-// Power Plan Tweaks 40 - Set power plan to maximum performance (disable power saving)
-function setMaxPerformancePowerPlan() {
-  exec('powercfg -setactive SCHEME_MAX', (err, stdout, stderr) => {
-    if (err) console.error('Error setting maximum performance power plan:', err);
-  });
-}
-
-// Power Plan Tweaks 41 - Disable Hybrid Sleep
-function disableHybridSleep() {
-  exec('reg add "HKCU\\Control Panel\\PowerCfg" /v "HibernateEnabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Hybrid Sleep:', err);
-  });
-}
-
-// Power Plan Tweaks 42 - Disable system cooling (increase CPU performance)
-function disableSystemCooling() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "TaskbarSmallIcons" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling system cooling policy:', err);
-  });
-}
-
-// Power Plan Tweaks 43 - Set high-performance graphics settings
-function setHighPerformanceGraphics() {
-  exec('powercfg -setacvalueindex 381b4222-f694-41f0-9685-ff5bb260df2e 5fb4938d-1ee8-4b0f-9a3c-5036b0ab995c dd848b2a-8a5d-4451-9ae2-39cd41658f6c 2', (err, stdout, stderr) => {
-    if (err) console.error('Error setting high-performance graphics:', err);
-  });
-}
-
-// Power Plan Tweaks 44 - Disable sleep mode (keep the system awake)
-function disableSleepMode() {
-  exec('powercfg -change standby-timeout-ac 0', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling sleep mode:', err);
-  });
-  exec('powercfg -change standby-timeout-dc 0', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling sleep mode for battery:', err);
-  });
-}
-
-// Power Plan Tweaks 45 - Disable PCIe Link State Power Management
-function disablePCIePowerManagement() {
-  exec('reg add "HKCU\\Control Panel\\PowerCfg" /v "DisableLinkStatePowerManagement" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling PCIe Link State Power Management:', err);
-  });
-}
-// FPS Tweaks 51 - Enable High Performance Power Plan
-function enableHighPerformancePowerPlan() {
-  exec('powercfg -setactive SCHEME_HIGH', (err, stdout, stderr) => {
-    if (err) console.error('Error enabling High Performance Power Plan:', err);
-  });
-}
-
-// FPS Tweaks 52 - Disable Windows Search Indexing
-function disableSearchIndexing() {
-  exec('sc stop "WSearch"', (err, stdout, stderr) => {
-    if (err) console.error('Error stopping Windows Search service:', err);
-  });
-  exec('sc config "WSearch" start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Windows Search service:', err);
-  });
-}
-
-// FPS Tweaks 53 - Adjust Processor Scheduling for Best Performance of Programs
-function adjustProcessorScheduling() {
-  exec('reg add "HKCU\\Control Panel\\Desktop" /v "ProcessorScheduling" /t REG_DWORD /d 2 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error adjusting processor scheduling:', err);
-  });
-}
-
-// FPS Tweaks 54 - Disable Windows Defender Real-Time Protection
-function disableDefenderRealTimeProtection() {
-  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender" /v "DisableRealtimeMonitoring" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Windows Defender Real-Time Protection:', err);
-  });
-}
-
-// FPS Tweaks 55 - Set CPU Priority Class to High
-function setCpuPriorityHigh() {
-  exec('bcdedit /set {current} priority 8', (err, stdout, stderr) => {
-    if (err) console.error('Error setting CPU priority to high:', err);
-  });
-}
-// Visual Tweaks 11 - Enable Transparency Effects
-function enableTransparencyEffects() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v "EnableTransparency" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error enabling transparency effects:', err);
-  });
-}
-
-// Visual Tweaks 12 - Show File Extensions for Known File Types
-function showFileExtensions() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "HideFileExt" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error showing file extensions:', err);
-  });
-}
-
-// Visual Tweaks 13 - Disable Aero Snap Feature
-function disableAeroSnap() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisableAeroSnap" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Aero Snap:', err);
-  });
-}
-
-// Visual Tweaks 14 - Set Taskbar Transparency
-function setTaskbarTransparency() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "TaskbarTransparency" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error setting taskbar transparency:', err);
-  });
-}
-
-// Visual Tweaks 15 - Change Window Border Width
-function changeWindowBorderWidth() {
-  exec('reg add "HKCU\\Control Panel\\Desktop" /v "BorderWidth" /t REG_SZ /d "-15" /f', (err, stdout, stderr) => {
-    if (err) console.error('Error changing window border width:', err);
-  });
-}
-// Privacy Tweaks 45 - Disable Windows Error Reporting
-function disableErrorReporting() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\Windows Error Reporting" /v "DontShowUI" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling error reporting:', err);
-  });
-}
-
-// Privacy Tweaks 46 - Prevent Microsoft from Sending Error Reports
-function preventErrorReports() {
-  exec('reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "DontShowErrorReporting" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error preventing error reports:', err);
-  });
-}
-
-// Privacy Tweaks 47 - Disable Windows Defender
-function disableWindowsDefender() {
-  exec('sc stop "WinDefend"', (err, stdout, stderr) => {
-    if (err) console.error('Error stopping Windows Defender service:', err);
-  });
-  exec('sc config "WinDefend" start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Windows Defender service:', err);
-  });
-}
-
-// Privacy Tweaks 48 - Disable Windows Store Auto-Updates
-function disableStoreAutoUpdates() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Appx" /v "PackageInstallAndUpdateBehavior" /t REG_DWORD /d 2 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Windows Store auto-updates:', err);
-  });
-}
-
-// Privacy Tweaks 49 - Disable Windows Insider Program Updates
-function disableInsiderProgramUpdates() {
-  exec('reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "AllowInsider" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Windows Insider Program updates:', err);
-  });
-}
-// FPS Tweaks 56 - Enable High Performance Power Plan
-function enableHighPerformancePowerPlan() {
-  exec('powercfg -setactive SCHEME_HIGH', (err, stdout, stderr) => {
-    if (err) console.error('Error enabling High Performance Power Plan:', err);
-  });
-}
-
-// FPS Tweaks 57 - Disable Windows Search Indexing
-function disableSearchIndexing() {
-  exec('sc stop "WSearch"', (err, stdout, stderr) => {
-    if (err) console.error('Error stopping Windows Search service:', err);
-  });
-  exec('sc config "WSearch" start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Windows Search service:', err);
-  });
-}
-
-// FPS Tweaks 58 - Adjust Processor Scheduling for Best Performance of Programs
-function adjustProcessorScheduling() {
-  exec('reg add "HKCU\\Control Panel\\Desktop" /v "ProcessorScheduling" /t REG_DWORD /d 2 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error adjusting processor scheduling:', err);
-  });
-}
-
-// FPS Tweaks 59 - Disable Windows Defender Real-Time Protection
-function disableDefenderRealTimeProtection() {
-  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender" /v "DisableRealtimeMonitoring" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Windows Defender Real-Time Protection:', err);
-  });
-}
-
-// FPS Tweaks 60 - Set CPU Priority Class to High
-function setCpuPriorityHigh() {
-  exec('bcdedit /set {current} priority 8', (err, stdout, stderr) => {
-    if (err) console.error('Error setting CPU priority to high:', err);
-  });
-}
-// Visual Tweaks 14 - Enable Transparency Effects
-function enableTransparencyEffects() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v "EnableTransparency" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error enabling transparency effects:', err);
-  });
-}
-
-// Visual Tweaks 15 - Show File Extensions for Known File Types
-function showFileExtensions() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "HideFileExt" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error showing file extensions:', err);
-  });
-}
-
-// Visual Tweaks 16 - Disable Aero Snap Feature
-function disableAeroSnap() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisableAeroSnap" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Aero Snap:', err);
-  });
-}
-
-// Visual Tweaks 17 - Enable Dark Mode for Windows Apps
-function enableDarkMode() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v "AppsUseLightTheme" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error enabling dark mode for apps:', err);
-  });
-}
-
-// Visual Tweaks 18 - Show Seconds in Taskbar Clock
-function showSecondsInTaskbarClock() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "ShowSecondsInSystemClock" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error showing seconds in taskbar clock:', err);
-  });
-}
-// FPS Tweaks 56 - Disable Low Priority I/O Tasks
-function disableLowPriorityIO() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "LowPriorityIO" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling low priority I/O tasks:', err);
-  });
-}
-
-// FPS Tweaks 57 - Set CPU affinity for optimized gaming
-function setCpuAffinity() {
-  exec('bcdedit /set {current} affinity 0x01', (err, stdout, stderr) => {
-    if (err) console.error('Error setting CPU affinity for gaming:', err);
-  });
-}
-
-// FPS Tweaks 58 - Disable prefetch for non-critical applications
-function disablePrefetchForNonCritical() {
-  exec('reg add "HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Memory Management\\PrefetchParameters" /v "EnablePrefetcher" /t REG_DWORD /d 2 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling prefetch for non-critical apps:', err);
-  });
-}
-
-// FPS Tweaks 59 - Disable Hibernation to save disk space and improve performance
-function disableHibernation() {
-  exec('powercfg -hibernate off', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling hibernation:', err);
-  });
-}
-
-// FPS Tweaks 60 - Adjust Virtual Memory/Pagefile settings for performance
-function adjustVirtualMemory() {
-  exec('wmic computersystem where name="%computername%" set AutomaticManagedPagefile=False', (err, stdout, stderr) => {
-    if (err) console.error('Error adjusting virtual memory settings:', err);
-  });
-  exec('wmic pagefileset where name="%SystemDrive%\\pagefile.sys" set InitialSize=2048,MaximumSize=8192', (err, stdout, stderr) => {
-    if (err) console.error('Error adjusting pagefile size:', err);
-  });
-}
-// Visual Tweaks 11 - Set taskbar to automatically hide
-function setAutoHideTaskbar() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "TaskbarAutoHide" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error setting taskbar to auto-hide:', err);
-  });
-}
-
-// Visual Tweaks 12 - Remove Cortana from Taskbar
-function removeCortanaFromTaskbar() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "ShowCortanaButton" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error removing Cortana from taskbar:', err);
-  });
-}
-
-// Visual Tweaks 13 - Change system font to Segoe UI (from default font)
-function changeSystemFont() {
-  exec('reg add "HKCU\\Control Panel\\Desktop" /v "FontSmoothing" /t REG_DWORD /d 2 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error changing system font:', err);
-  });
-}
-
-// Visual Tweaks 14 - Disable animations in File Explorer
-function disableFileExplorerAnimations() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "Animations" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling animations in File Explorer:', err);
-  });
-}
-
-// Visual Tweaks 15 - Enable Dark Mode for File Explorer
-function enableDarkModeExplorer() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v "AppsUseLightTheme" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error enabling dark mode in File Explorer:', err);
-  });
-}
-// Privacy Tweaks 45 - Disable Windows 10 Cortana data collection
-function disableCortanaDataCollection() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Search" /v "AllowCortana" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Cortana data collection:', err);
-  });
-}
-
-// Privacy Tweaks 46 - Disable Windows Update Delivery Optimization
-function disableWindowsUpdateOptimization() {
-  exec('reg add "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\DeliveryOptimization\\Config" /v "DODownloadMode" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Delivery Optimization:', err);
-  });
-}
-
-// Privacy Tweaks 47 - Disable User Account Control (UAC)
-function disableUAC() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "EnableLUA" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling UAC:', err);
-  });
-}
-
-// Privacy Tweaks 48 - Disable automatic sending of feedback to Microsoft
-function disableMicrosoftFeedback() {
-  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent" /v "FeedbackEnabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Microsoft Feedback:', err);
-  });
-}
-
-// Privacy Tweaks 49 - Turn off Location Services
-function turnOffLocationServices() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Geolocation" /v "Enabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error turning off location services:', err);
-  });
-}
-// FPS Tweaks 61 - Disable Core Parking for Performance Boost
-function disableCoreParking() {
-  exec('reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerSettings\\54533251-82be-4824-96c1-47b60b740d00\\0cc5b647-c1df-4637-891a-dec35c318583" /v "ValueMax" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling core parking:', err);
-  });
-}
-
-// FPS Tweaks 62 - Disable Dynamic Tick for Faster Performance
-function disableDynamicTick() {
-  exec('bcdedit /set disabledynamictick yes', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling dynamic tick:', err);
-  });
-}
-
-// FPS Tweaks 63 - Set Maximum Processor State to 100%
-function setMaxProcessorState() {
-  exec('powercfg /setacvalueindex SCHEME_MAX SUB_PROCESSOR PROCTHROTTLEMAX 100', (err, stdout, stderr) => {
-    if (err) console.error('Error setting max processor state:', err);
-  });
-}
-
-// FPS Tweaks 64 - Disable Memory Compression (Windows 10/11)
-function disableMemoryCompression() {
-  exec('powershell "Disable-MMAgent -MemoryCompression"', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling memory compression:', err);
-  });
-}
-
-// FPS Tweaks 65 - Adjust CPU Thread Priority for High Performance
-function setCpuThreadPriority() {
-  exec('bcdedit /set numprocthreads 16', (err, stdout, stderr) => {
-    if (err) console.error('Error adjusting CPU thread priority:', err);
-  });
-}
-// Visual Tweaks 16 - Enable Dark Mode for System
-function enableDarkMode() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v "AppsUseLightTheme" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error enabling Dark Mode:', err);
-  });
-}
-
-// Visual Tweaks 17 - Disable Transparency Effects
-function disableTransparency() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v "EnableTransparency" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling transparency:', err);
-  });
-}
-
-// Visual Tweaks 18 - Show Taskbar in Small Icons Mode
-function setSmallTaskbarIcons() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "TaskbarSmallIcons" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error setting small taskbar icons:', err);
-  });
-}
-
-// Visual Tweaks 19 - Disable Taskbar Glomming (grouping taskbar icons)
-function disableTaskbarGrouping() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "TaskbarGlomLevel" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling taskbar grouping:', err);
-  });
-}
-
-// Visual Tweaks 20 - Enable Classic Context Menu for File Explorer
-function enableClassicContextMenu() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "ExtendedUIHoverTime" /t REG_DWORD /d 100 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error enabling classic context menu:', err);
-  });
-}
-
-// Privacy Tweaks 50 - Disable Windows Consumer Features (reduce privacy data sharing)
-function disableConsumerFeatures() {
-  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent" /v "DisableWindowsConsumerFeatures" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling consumer features:', err);
-  });
-}
-
-// Privacy Tweaks 51 - Disable Windows Insider Program Data Collection
-function disableInsiderDataCollection() {
-  exec('reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Insider Data Collection:', err);
-  });
-}
-
-// Privacy Tweaks 52 - Disable Cloud-Based App Data Collection
-function disableCloudAppDataCollection() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager" /v "ContentDeliveryAllowed" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling cloud app data collection:', err);
-  });
-}
-
-// Privacy Tweaks 53 - Disable All Telemetry Features
-function disableAllTelemetry() {
-  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling all telemetry:', err);
-  });
-}
-
-// Privacy Tweaks 54 - Disable Windows Error Reporting
-function disableErrorReportingService() {
-  exec('sc stop WerSvc', (err, stdout, stderr) => {
-    if (err) console.error('Error stopping Windows Error Reporting service:', err);
-  });
-  exec('sc config WerSvc start= disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Windows Error Reporting service:', err);
-  });
-}
-// FPS Tweaks 66 - Disable background services for gaming
-function disableBackgroundServices() {
-  exec('sc stop "SysMain"', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling SysMain:', err);
-  });
-  exec('sc stop "wuauserv"', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Windows Update:', err);
-  });
-  exec('sc stop "WerSvc"', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling WerSvc:', err);
-  });
-}
-
-// FPS Tweaks 67 - Enable CPU performance mode for high loads
-function enableCpuPerformanceMode() {
-  exec('bcdedit /set {current} priority 8', (err, stdout, stderr) => {
-    if (err) console.error('Error setting CPU performance mode:', err);
-  });
-}
-// Visual Tweaks 21 - Disable Taskbar Transparency
-function disableTaskbarTransparency() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" /v "EnableTransparency" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling taskbar transparency:', err);
-  });
-}
-
-// Visual Tweaks 22 - Enable Aero Glass effects
-function enableAeroGlass() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\DWM" /v "AeroGlass" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error enabling Aero Glass:', err);
-  });
-}
-// Privacy Tweaks 55 - Disable Telemetry and Data Collection
-function disableTelemetryAndDataCollection() {
-  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling telemetry and data collection:', err);
-  });
-}
-
-// Privacy Tweaks 56 - Disable Windows Defender Cloud Protection
-function disableDefenderCloudProtection() {
-  exec('reg add "HKLM\\SOFTWARE\\Microsoft\\Windows Defender\\Spynet" /v "SpyNetReporting" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling cloud protection in Defender:', err);
-  });
-}
-// Network Tweaks 16 - Set MTU for faster internet speeds
-function setMTUForInternet() {
-  exec('netsh interface ipv4 set subinterface "Ethernet" mtu=1500 store=persistent', (err, stdout, stderr) => {
-    if (err) console.error('Error setting MTU for Ethernet:', err);
-  });
-  exec('netsh interface ipv6 set subinterface "Ethernet" mtu=1500 store=persistent', (err, stdout, stderr) => {
-    if (err) console.error('Error setting MTU for IPv6:', err);
-  });
-}
-
-// Network Tweaks 17 - Disable Teredo Tunneling (improves internet speed)
-function disableTeredoTunneling() {
-  exec('netsh interface ipv6 set teredo disabled', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Teredo tunneling:', err);
-  });
-}
-// RAM Tweaks 1 - Optimize RAM for 4GB Systems
-function optimizeFor4GB() {
-  exec('bcdedit /set IncreaseUserVa 3072', (err, stdout, stderr) => {
-    if (err) console.error('Error optimizing for 4GB RAM:', err);
-  });
-  exec('wmic memorychip set speed=1600', (err, stdout, stderr) => {
-    if (err) console.error('Error optimizing RAM speed for 4GB:', err);
-  });
-}
-
-// RAM Tweaks 2 - Optimize RAM for 8GB Systems
-function optimizeFor8GB() {
-  exec('bcdedit /set IncreaseUserVa 4096', (err, stdout, stderr) => {
-    if (err) console.error('Error optimizing for 8GB RAM:', err);
-  });
-  exec('wmic memorychip set speed=2400', (err, stdout, stderr) => {
-    if (err) console.error('Error optimizing RAM speed for 8GB:', err);
-  });
-}
-
-// RAM Tweaks 3 - Optimize RAM for 16GB Systems
-function optimizeFor16GB() {
-  exec('bcdedit /set IncreaseUserVa 8192', (err, stdout, stderr) => {
-    if (err) console.error('Error optimizing for 16GB RAM:', err);
-  });
-  exec('wmic memorychip set speed=2666', (err, stdout, stderr) => {
-    if (err) console.error('Error optimizing RAM speed for 16GB:', err);
-  });
-}
-
-// RAM Tweaks 4 - Optimize RAM for 32GB Systems
-function optimizeFor32GB() {
-  exec('bcdedit /set IncreaseUserVa 16384', (err, stdout, stderr) => {
-    if (err) console.error('Error optimizing for 32GB RAM:', err);
-  });
-  exec('wmic memorychip set speed=2933', (err, stdout, stderr) => {
-    if (err) console.error('Error optimizing RAM speed for 32GB:', err);
-  });
-}
-
-// RAM Tweaks 5 - Disable RAM compression for better performance
-function disableRamCompression() {
-  exec('powershell "Disable-MMAgent -MemoryCompression"', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling RAM compression:', err);
-  });
-}
-// Gaming Tweaks 1 - Disable unnecessary background apps during gaming
-function disableBackgroundAppsForGaming() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\BackgroundAccessApplications" /v "LetAppsRunInBackground" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling background apps for gaming:', err);
-  });
-}
-
-// Gaming Tweaks 2 - Optimize CPU cores for gaming
-function optimizeCpuForGaming() {
-  exec('bcdedit /set numprocthreads 8', (err, stdout, stderr) => {
-    if (err) console.error('Error optimizing CPU cores for gaming:', err);
-  });
-}
-
-// Gaming Tweaks 3 - Set game mode for better performance
-function enableGameMode() {
-  exec('reg add "HKCU\\Software\\Microsoft\\GameBar" /v "GameModeEnabled" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error enabling Game Mode:', err);
-  });
-}
-
-// Gaming Tweaks 4 - Disable Game DVR for improved FPS
-function disableGameDVRForPerformance() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Game DVR:', err);
-  });
-}
-
-// Gaming Tweaks 5 - Optimize disk performance for gaming
-function optimizeDiskForGaming() {
-  exec('reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisableDiskOptimization" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error optimizing disk for gaming:', err);
-  });
-}
-// Privacy Tweaks 57 - Disable SmartScreen for enhanced privacy
-function disableSmartScreen() {
-  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System" /v "EnableSmartScreen" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling SmartScreen:', err);
-  });
-}
-
-// Privacy Tweaks 58 - Disable advertising ID tracking
-function disableAdIdTracking() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo" /v "Enabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling advertising ID tracking:', err);
-  });
-}
-
-// Privacy Tweaks 59 - Disable Windows Data Collection
-function disableWindowsDataCollection() {
-  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling data collection:', err);
-  });
-}
-
-// Privacy Tweaks 60 - Disable Windows Location Services
-function disableLocationServices() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Geolocation" /v "Enabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling location services:', err);
-  });
-}
-// FPS Tweaks 68 - Adjust CPU priority for gaming applications
-function adjustCpuPriority() {
-  exec('bcdedit /set {current} affinity 0x01', (err, stdout, stderr) => {
-    if (err) console.error('Error adjusting CPU priority:', err);
-  });
-}
-
-// FPS Tweaks 69 - Set system responsiveness to high for gaming
-function setSystemResponsiveness() {
-  exec('reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile" /v "SystemResponsiveness" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error setting system responsiveness:', err);
-  });
-}
-
-// FPS Tweaks 70 - Enable Multi-Threaded Performance
-function enableMultiThreaded() {
-  exec('bcdedit /set numproc 16', (err, stdout, stderr) => {
-    if (err) console.error('Error enabling multi-threaded performance:', err);
-  });
-}
-// Visual Tweaks 23 - Disable screen flicker from Windows animations
-function disableScreenFlicker() {
-  exec('reg add "HKCU\\Control Panel\\Desktop" /v "ScreenFlicker" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling screen flicker:', err);
-  });
-}
-
-// Visual Tweaks 24 - Change mouse cursor speed for better gaming response
-function changeMouseCursorSpeed() {
-  exec('reg add "HKCU\\Control Panel\\Mouse" /v "MouseSpeed" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error changing mouse cursor speed:', err);
-  });
-}
-
-// Visual Tweaks 25 - Disable Snap Assist for better window management
-function disableSnapAssist() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v "DisableSnap" /t REG_DWORD /d 1 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling Snap Assist:', err);
-  });
-}
-// Privacy Tweaks 61 - Disable Windows 10 telemetry and data collection completely
-function disableWindowsTelemetry() {
-  exec('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling telemetry:', err);
-  });
-}
-
-// Privacy Tweaks 62 - Prevent Cortana from collecting data
-function preventCortanaDataCollection() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Search" /v "AllowCortana" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error preventing Cortana data collection:', err);
-  });
-}
-
-// Privacy Tweaks 63 - Disable advertising ID and targeted ads
-function disableAdvertisingId() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo" /v "Enabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling advertising ID:', err);
-  });
-}
-// FPS Tweaks 71 - Disable Prefetch for faster boot times
-function disablePrefetch() {
-  exec('reg add "HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Memory Management\\PrefetchParameters" /v "EnablePrefetcher" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling prefetch:', err);
-  });
-}
-
-// FPS Tweaks 72 - Set CPU priority for high performance tasks
-function setCpuPriorityForHighTasks() {
-  exec('reg add "HKCU\\Control Panel\\Desktop" /v "ProcessorScheduling" /t REG_DWORD /d 2 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error setting CPU priority:', err);
-  });
-}
-// Visual Tweaks 26 - Disable smooth scrolling in browsers
-function disableSmoothScrolling() {
-  exec('reg add "HKCU\\Control Panel\\Desktop" /v "SmoothScrolling" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling smooth scrolling:', err);
-  });
-}
-
-// Visual Tweaks 27 - Enable extra menu delay for context menus
-function enableMenuDelay() {
-  exec('reg add "HKCU\\Control Panel\\Desktop" /v "MenuShowDelay" /t REG_DWORD /d 500 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error enabling menu delay:', err);
-  });
-}
-// Visual Tweaks 26 - Disable smooth scrolling in browsers
-function disableSmoothScrolling() {
-  exec('reg add "HKCU\\Control Panel\\Desktop" /v "SmoothScrolling" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling smooth scrolling:', err);
-  });
-}
-
-// Privacy Tweaks 64 - Disable automatic app updates for Store apps
-function disableStoreAppUpdates() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Appx" /v "PackageInstallAndUpdateBehavior" /t REG_DWORD /d 2 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling automatic app updates:', err);
-  });
-}
-
-// Privacy Tweaks 65 - Disable location tracking for apps
-function disableLocationTracking() {
-  exec('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Geolocation" /v "Enabled" /t REG_DWORD /d 0 /f', (err, stdout, stderr) => {
-    if (err) console.error('Error disabling location tracking:', err);
-  });
-}
-
-
-// Apply all final optimizations and settings
-function applyFinalOptimizations() {
-  disableUnwantedServices();
-  removeWindowsBloatware();
-  cleanSystemTempFiles();
-  disableTelemetry();
-  applyUltimatePowerPlan();
-  installAndLaunchGames();  // Steam, Epic, Ubisoft, etc.
-  console.log('Final tweaks and optimizations applied.');
-}
-
-
-
-
-
-function applyAllTweaks() {
-  applyFpsTweaks();
-  applyNetworkTweaks();
-  applyVisualTweaks();
-  applyPrivacyTweaks();
-  applyGameLauncherTweaks();
-  applyMiscTweaks();
-}
-
-// Add any other tweaks or additional functions as necessary
-
+  }
+
+  /***************************************************************
+   * 9) ADMIN PAGE
+   ***************************************************************/
+  function reloadKeys() {
+    let table = document.querySelector('#keysTable tbody');
+    table.innerHTML = "";
+    let keysData = readJSON(KEYS_FILE); // { keys: {...}}
+    if (!keysData.keys) return;
+
+    for (let [k, val] of Object.entries(keysData.keys)) {
+      let tr = document.createElement('tr');
+
+      let tdKey  = document.createElement('td'); tdKey.innerText  = k; tr.appendChild(tdKey);
+      let tdType = document.createElement('td'); tdType.innerText = val.type; tr.appendChild(tdType);
+      let tdUsr  = document.createElement('td'); tdUsr.innerText  = val.boundUser || ""; tr.appendChild(tdUsr);
+      let tdHWID = document.createElement('td'); tdHWID.innerText = val.boundHWID || ""; tr.appendChild(tdHWID);
+      let tdDate = document.createElement('td'); tdDate.innerText = val.activationDate || ""; tr.appendChild(tdDate);
+      let tdExp  = document.createElement('td'); tdExp.innerText  = isKeyExpired(val) ? "Yes" : "No"; tr.appendChild(tdExp);
+
+      table.appendChild(tr);
+    }
+  }
+
+  /***************************************************************
+   * 10) REDEEM KEY PROMPT
+   ***************************************************************/
+  function redeemKeyPrompt() {
+    let newKey = prompt("Enter new license key:");
+    if (!newKey) return;
+    // In real usage, you'd re-check or re-bind the account. For now, just do a placeholder
+    alert(`Redeemed key: ${newKey} (demo)`);
+    // Potentially update user object in accounts.json
+    // etc.
+  }
+
+  /***************************************************************
+   * 11) SHOW/HIDE PASSWORD
+   ***************************************************************/
+  function toggleShowPassword(inputId) {
+    let input = document.getElementById(inputId);
+    if (input.type === "password") {
+      input.type = "text";
+    } else {
+      input.type = "password";
+    }
+  }
+
+  /***************************************************************
+   * 12) SAVE LOGIN (Remember Me)
+   ***************************************************************/
+  function saveLogin(user, pass, keyVal) {
+    let store = {
+      username: user,
+      password: pass,
+      licenseKey: keyVal
+    };
+    fs.writeFileSync(path.join(__dirname, 'login.json'), JSON.stringify(store, null, 2));
+  }
+  function loadSavedLogin() {
+    let filePath = path.join(__dirname, 'login.json');
+    if (fs.existsSync(filePath)) {
+      let data = fs.readFileSync(filePath, 'utf8');
+      let store = JSON.parse(data);
+      if (store.username && store.password) {
+        document.getElementById('loginUsername').value = store.username;
+        document.getElementById('loginPassword').value = store.password;
+        if (store.licenseKey) {
+          document.getElementById('loginKey').value = store.licenseKey;
+        }
+        document.getElementById('saveLoginCheck').checked = true;
+      }
+    }
+  }
+  function clearSavedLogin() {
+    let filePath = path.join(__dirname, 'login.json');
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+  }
+
+  /***************************************************************
+   * 13) SAVE / LOAD CONFIG (Tweak States, etc.)
+   ***************************************************************/
+  function saveConfig() {
+    let configData = readJSON(CONFIG_FILE);
+    if (!configData.tweaks) configData.tweaks = {};
+
+    // e.g. store the current state of toggles
+    configData.tweaks.fps_gameMode = document.getElementById('toggleGameMode').checked;
+    configData.tweaks.fps_gameDVR  = document.getElementById('toggleGameDVR').checked;
+    configData.tweaks.fps_fastStartup = document.getElementById('toggleFastStartup').checked;
+    configData.tweaks.fps_disable_hpet = document.getElementById('toggle_disable_hpet').checked;
+    configData.tweaks.fps_optimize_scheduler = document.getElementById('toggle_optimize_scheduler').checked;
+    configData.tweaks.fps_input_delay = document.getElementById('toggle_input_delay').checked;
+
+    configData.tweaks.net_tcp  = document.getElementById('toggleTCP').checked;
+    configData.tweaks.net_dns  = document.getElementById('toggleDNSFlush').checked;
+
+    configData.tweaks.vis_anim = document.getElementById('toggleAnimations').checked;
+    configData.tweaks.vis_trans= document.getElementById('toggleTransparency').checked;
+    configData.tweaks.vis_disable_transparency = document.getElementById('toggle_disable_transparency').checked;
+    configData.tweaks.vis_show_seconds = document.getElementById('toggle_show_seconds_in_taskbar_clock').checked;
+
+    configData.tweaks.priv_winupd  = document.getElementById('toggleWinUpdate').checked;
+    configData.tweaks.priv_search  = document.getElementById('toggleSearchIndex').checked;
+    configData.tweaks.priv_telemetry = document.getElementById('toggleTelemetry').checked;
+    configData.tweaks.priv_no_telemetry = document.getElementById('toggle_no_telemetry').checked;
+    configData.tweaks.priv_disable_edge_tracking = document.getElementById('toggle_disable_edge_tracking').checked;
+    configData.tweaks.priv_disable_app_tracking = document.getElementById('toggle_disable_app_tracking').checked;
+    configData.tweaks.priv_disable_web_search = document.getElementById('toggle_disable_web_search').checked;
+    configData.tweaks.priv_disable_win_defender = document.getElementById('toggle_disable_win_defender').checked;
+    configData.tweaks.priv_disable_update_telemetry = document.getElementById('toggle_disable_update_telemetry').checked;
+    configData.tweaks.priv_disable_wi_fi_sense = document.getElementById('toggle_disable_wi_fi_sense').checked;
+    configData.tweaks.priv_disable_win_error_reporting = document.getElementById('toggle_disable_win_error_reporting').checked;
+
+    configData.tweaks.misc_remote  = document.getElementById('toggleRemoteAssist').checked;
+    configData.tweaks.misc_bgApps  = document.getElementById('toggleBackgroundApps').checked;
+    configData.tweaks.misc_debloat = document.getElementById('toggleDebloat').checked;
+    configData.tweaks.misc_disable_app_vulnerability = document.getElementById('toggle_disable_app_vulnerability').checked;
+    configData.tweaks.misc_disable_sys_restore = document.getElementById('toggle_disable_sys_restore').checked;
+    configData.tweaks.misc_disable_throttle = document.getElementById('toggle_disable_throttle').checked;
+    configData.tweaks.misc_enable_fast_startup = document.getElementById('toggle_enable_fast_startup').checked;
+
+    configData.tweaks.power_ultimate_performance = document.getElementById('toggle_ultimate_performance').checked;
+    configData.tweaks.power_enable_cpu_performance = document.getElementById('toggle_enable_cpu_performance').checked;
+    configData.powerPlan = document.getElementById('powerPlanSelect').value || "";
+
+    writeJSON(CONFIG_FILE, configData);
+    alert("Config saved!");
+  }
+
+  function loadConfig() {
+    let configData = readJSON(CONFIG_FILE);
+    if (!configData.tweaks) {
+      alert("No config found!");
+      return;
+    }
+    let t = configData.tweaks;
+    document.getElementById('toggleGameMode').checked = !!t.fps_gameMode;
+    document.getElementById('toggleGameDVR').checked  = !!t.fps_gameDVR;
+    document.getElementById('toggleFastStartup').checked = !!t.fps_fastStartup;
+    document.getElementById('toggle_disable_hpet').checked = !!t.fps_disable_hpet;
+    document.getElementById('toggle_optimize_scheduler').checked = !!t.fps_optimize_scheduler;
+    document.getElementById('toggle_input_delay').checked = !!t.fps_input_delay;
+
+    document.getElementById('toggleTCP').checked   = !!t.net_tcp;
+    document.getElementById('toggleDNSFlush').checked = !!t.net_dns;
+
+    document.getElementById('toggleAnimations').checked   = !!t.vis_anim;
+    document.getElementById('toggleTransparency').checked = !!t.vis_trans;
+    document.getElementById('toggle_disable_transparency').checked = !!t.vis_disable_transparency;
+    document.getElementById('toggle_show_seconds_in_taskbar_clock').checked = !!t.vis_show_seconds;
+
+    document.getElementById('toggleWinUpdate').checked   = !!t.priv_winupd;
+    document.getElementById('toggleSearchIndex').checked = !!t.priv_search;
+    document.getElementById('toggleTelemetry').checked   = !!t.priv_telemetry;
+    document.getElementById('toggle_no_telemetry').checked = !!t.priv_no_telemetry;
+    document.getElementById('toggle_disable_edge_tracking').checked = !!t.priv_disable_edge_tracking;
+    document.getElementById('toggle_disable_app_tracking').checked = !!t.priv_disable_app_tracking;
+    document.getElementById('toggle_disable_web_search').checked = !!t.priv_disable_web_search;
+    document.getElementById('toggle_disable_win_defender').checked = !!t.priv_disable_win_defender;
+    document.getElementById('toggle_disable_update_telemetry').checked = !!t.priv_disable_update_telemetry;
+    document.getElementById('toggle_disable_wi_fi_sense').checked = !!t.priv_disable_wi_fi_sense;
+    document.getElementById('toggle_disable_win_error_reporting').checked = !!t.priv_disable_win_error_reporting;
+
+    document.getElementById('toggleRemoteAssist').checked    = !!t.misc_remote;
+    document.getElementById('toggleBackgroundApps').checked  = !!t.misc_bgApps;
+    document.getElementById('toggleDebloat').checked         = !!t.misc_debloat;
+    document.getElementById('toggle_disable_app_vulnerability').checked = !!t.misc_disable_app_vulnerability;
+    document.getElementById('toggle_disable_sys_restore').checked = !!t.misc_disable_sys_restore;
+    document.getElementById('toggle_disable_throttle').checked = !!t.misc_disable_throttle;
+    document.getElementById('toggle_enable_fast_startup').checked = !!t.misc_enable_fast_startup;
+
+    document.getElementById('toggle_ultimate_performance').checked = !!t.power_ultimate_performance;
+    document.getElementById('toggle_enable_cpu_performance').checked = !!t.power_enable_cpu_performance;
+    document.getElementById('powerPlanSelect').value = configData.powerPlan || "";
+    alert("Config loaded!");
+  }
+
+</script>
+</body>
+</html>
