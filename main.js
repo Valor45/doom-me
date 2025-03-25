@@ -21,6 +21,8 @@ function createWindow() {
 }
 
 // Enhanced software installation function
+// Updated software installation function with all your requested apps
+// Updated software installation function with all your requested apps
 function installSoftware(softwareName) {
   console.log(`Starting installation of ${softwareName}...`);
   logAction(`Installing ${softwareName}`);
@@ -45,6 +47,42 @@ function installSoftware(softwareName) {
       installer: 'adwcleaner.exe /silent',
       filename: 'adwcleaner.exe'
     },
+    'NVCleanstall': {
+      url: 'https://www.techpowerup.com/download/techpowerup-nvcleanstall/',
+      installer: 'NVCleanstall.exe /S',
+      filename: 'NVCleanstall.exe'
+    },
+    'Nvidia Profile Inspector': {
+      url: 'https://github.com/Orbmu2k/nvidiaProfileInspector/releases/download/2.4.0.19/nvidiaProfileInspector.zip',
+      installer: 'powershell Expand-Archive -Path nvidiaProfileInspector.zip -DestinationPath "$env:APPDATA\\NVIDIA Profile Inspector"',
+      filename: 'nvidiaProfileInspector.zip',
+      postInstall: () => {
+        // Create shortcut after extraction
+        const shortcutPath = path.join(os.homedir(), 'Desktop', 'NVIDIA Profile Inspector.lnk');
+        const targetPath = path.join(os.homedir(), 'AppData', 'Roaming', 'NVIDIA Profile Inspector', 'nvidiaProfileInspector.exe');
+        createShortcut(targetPath, shortcutPath);
+      }
+    },
+    'WinRAR': {
+      url: 'https://www.win-rar.com/fileadmin/winrar-versions/downloader/WinRAR-711.exe',
+      installer: 'WinRAR-711.exe /S',
+      filename: 'WinRAR-711.exe'
+    },
+    'ParkControl': {
+      url: 'https://dl.bitsum.com/files/parkcontrolsetup64.exe',
+      installer: 'parkcontrolsetup64.exe /S',
+      filename: 'parkcontrolsetup64.exe'
+    },
+    'Process Lasso': {
+      url: 'https://dl.bitsum.com/files/processlassosetup64.exe',
+      installer: 'processlassosetup64.exe /S',
+      filename: 'processlassosetup64.exe'
+    },
+    'Google Chrome': {
+      url: 'https://www.google.com/chrome/',
+      installer: 'ChromeSetup.exe /silent /install',
+      filename: 'ChromeSetup.exe'
+    },
     'Steam': {
       url: 'https://cdn.cloudflare.steamstatic.com/client/installer/SteamSetup.exe',
       installer: 'SteamSetup.exe /silent',
@@ -55,20 +93,81 @@ function installSoftware(softwareName) {
       installer: 'msiexec /i EpicGamesLauncherInstaller.msi /quiet /qn /norestart',
       filename: 'EpicGamesLauncherInstaller.msi'
     },
+    'Nvidia App': {
+      url: 'https://us.download.nvidia.com/nvapp/client/11.0.3.213/NVIDIA_app_beta_v11.0.3.213.exe',
+      installer: 'NVIDIA_app_beta_v11.0.3.213.exe /S',
+      filename: 'NVIDIA_app_beta_v11.0.3.213.exe'
+    },
+    'AMD Software': {
+      url: 'https://drivers.amd.com/drivers/installer/24.30/whql/amd-software-adrenalin-edition-25.3.1-minimalsetup-250312_web.exe',
+      installer: 'amd-software-adrenalin-edition-25.3.1-minimalsetup-250312_web.exe -Install',
+      filename: 'amd-software-adrenalin-edition-25.3.1-minimalsetup-250312_web.exe'
+    },
+    'DDU Uninstaller': {
+      url: 'https://www.guru3d.com/download/display-driver-uninstaller-download/',
+      installer: 'DDU.exe', // Note: DDU should be run manually in Safe Mode
+      filename: 'DDU.exe',
+      postInstall: () => {
+        dialog.showMessageBox({
+          type: 'info',
+          title: 'DDU Installation Note',
+          message: 'Display Driver Uninstaller has been downloaded. Please run it in Safe Mode for proper driver uninstallation.',
+          buttons: ['OK']
+        });
+      }
+    },
     'Battle.net': {
       url: 'https://www.battle.net/download/getInstallerForGame?os=win&gameProgram=BATTLENET_APP',
       installer: 'Battle.net-Setup.exe --lang=enUS --installpath="C:\\Program Files (x86)\\Battle.net"',
       filename: 'Battle.net-Setup.exe'
+    },
+    'Roblox': {
+      url: 'https://www.roblox.com/download',
+      installer: 'RobloxPlayerLauncher.exe', // Roblox installs when you try to play a game
+      filename: 'RobloxPlayerLauncher.exe',
+      postInstall: () => {
+        dialog.showMessageBox({
+          type: 'info',
+          title: 'Roblox Installation',
+          message: 'Roblox Player has been installed. You can now play Roblox games.',
+          buttons: ['OK']
+        });
+      }
     },
     'Ubisoft Connect': {
       url: 'https://ubi.li/4vxt9',
       installer: 'UbisoftConnectInstaller.exe /S',
       filename: 'UbisoftConnectInstaller.exe'
     },
+    'GOG Galaxy': {
+      url: 'https://webinstallers.gog-statics.com/download/GOG_Galaxy_2.0.exe?payload=PcToHUuHiGDWV5VpUDoNUmgItQh7syBg0gqFORqGWgBVP-75nUG-cochNK4DMJDCOy2vph1RHvz6SJZOwqR3G2GmnLpWttOpi1rL4tNn84kRyrGpZg6juhUuHrQiAlQEmwJRaQcGXIeswWsiyjSwIFc-j7kNspDo15fxvMSYSxw6RZb2Strqzhg3tYTVvId7sNO6yk23wZc4G2TeDMWiwzNIv5tgYFXM7su3bVhpphwLwO7ItuMdmbCkzxeK9hWSVAmWucW2hTXPkQuZKdLrXmjiZMEG_-X07CWkw2Cy73q8bemPlyUG9x65FFmU_LUgzk-VW9NS8Qh4bULsfua_MZB6WFWu9PPCYyxq_v7MaLcSS9Y7ZMbRS8Lf0VBpqArSUjVSRg4zDgkovOyxCSBRW_RhCc-FtM5IgpWkZgQXtp9DgsWA_svO2w1JpKrupHqUnMJOotKi6lokK29CeXL-dr1mTvUWBd_mTpeEzYHA0Ig974tSQ_bIvh5beQNwS7vcuMk2XRHZOWqPZsxlBY5vtTe1aa16GKxq7O40dWghvj6V5ssdYjVqK6qyG6iDDozcidM5ddNzUfjvwctNBv_TezNdPI7TRgZ4GRNNoBl04hg-pOKyqW13rqUCcC_yGznpQTqX_lpnyDRn3z7zfstwkeGqxMB-RBkg3d0sQbt9NZC_1vBmobHP-eBk9pYTkMxVU7YFhZWq3ahQ7rVF74XKhsmp3yc1eRyHBrkF7-r9s03iPvPr4NNtTwvoonc7r-WI_yJG',
+      installer: 'GOG_Galaxy_2.0.exe /VERYSILENT',
+      filename: 'GOG_Galaxy_2.0.exe'
+    },
     'Discord': {
-      url: 'https://discord.com/api/download?platform=win&format=exe',
+      url: 'https://discord.com/api/downloads/distributions/app/installers/latest?channel=stable&platform=win&arch=x64',
       installer: 'DiscordSetup.exe /S',
       filename: 'DiscordSetup.exe'
+    },
+    'Wargaming.net': {
+      url: 'https://redirect.wargaming.net/WGC/Wargaming_Game_Center_Install_NA.exe',
+      installer: 'Wargaming_Game_Center_Install_NA.exe /S',
+      filename: 'Wargaming_Game_Center_Install_NA.exe'
+    },
+    'Origin': {
+      url: 'https://www.ea.com/ea-app#downloads',
+      installer: 'EAappInstaller.exe /silent',
+      filename: 'EAappInstaller.exe'
+    },
+    'Bloxstrap': {
+      url: 'https://github.com/pizzaboxer/bloxstrap/releases/latest/download/Bloxstrap.exe',
+      installer: 'Bloxstrap.exe /SILENT',
+      filename: 'Bloxstrap.exe'
+    },
+    'EA App': {
+      url: 'https://origin-a.akamaihd.net/EA-Desktop-Client-Download/installer-releases/EAappInstaller.exe',
+      installer: 'EAappInstaller.exe /silent',
+      filename: 'EAappInstaller.exe'
     }
   };
 
@@ -116,6 +215,11 @@ function installSoftware(softwareName) {
           buttons: ['OK']
         });
         
+        // Run post-install actions if defined
+        if (software.postInstall) {
+          software.postInstall();
+        }
+        
         // Clean up the downloaded file
         try {
           fs.unlinkSync(downloadPath);
@@ -136,6 +240,18 @@ function installSoftware(softwareName) {
     });
 }
 
+// Helper function to create shortcuts
+function createShortcut(target, path) {
+  const { spawn } = require('child_process');
+  const args = [
+    '-ExecutionPolicy', 'Bypass',
+    '-NoProfile',
+    '-Command',
+    `$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateShortcut('${path}'); $s.TargetPath = '${target}'; $s.Save()`
+  ];
+  
+  spawn('powershell.exe', args);
+}
 // Handle system logs and display
 function logAction(action) {
   const logFilePath = path.join(__dirname, 'actions.log');
